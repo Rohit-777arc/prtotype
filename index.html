@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Artemis & CLPS Lunar Mission Explorer</title>
     <style>
-        /* 🎨 Futuristic Dark Space Theme */
         body {
             margin: 0;
             background-color: #050811;
@@ -86,7 +85,6 @@
             font-size: 12px;
             color: #94a3b8;
         }
-        /* Metrics panel explaining solar and comm horizons */
         #metrics-panel {
             background-color: #0b132b;
             padding: 15px;
@@ -116,7 +114,6 @@
 </head>
 <body>
 
-    <!-- LEFT SIDEBAR: Mission controls and Wikipedia imagery -->
     <div id="sidebar">
         <h1>🚀 CLPS Mission Browser</h1>
         <p style="font-size: 13px; margin: 0; color: #94a3b8;">Evaluate landing horizons, solar illumination arrays, and communication paths.</p>
@@ -125,36 +122,35 @@
         
         <div class="section-title">Select Landing Target</div>
 
-        <!-- Target 1: Lunar South Pole (Intuitive Machines IM-2 / Nova-C) -->
-        <div class="mission-card" onclick="updateDashboard('south-pole', 'Intuitive Machines IM-2', '80% (Extreme Shadows)', 'Continuous DTE Window', 'https://wikimedia.org')">
-            <img class="wiki-thumb" src="https://wikimedia.org" alt="Nova-C Lander via Wikipedia">
+        <!-- Safe Direct Wikipedia Upload CDN Links -->
+        <div class="mission-card" onclick="updateDashboard('south-pole', 'Intuitive Machines IM-2', '80% (Extreme Shadows)', 'Continuous DTE Window')">
+            <img class="wiki-thumb" src="https://wikimedia.org" alt="Nova-C Lander">
             <div class="mission-name">📍 Shackleton Crater (South Pole)</div>
             <div class="mission-meta">Objective: Ice Drilling & Solar Power Volatiles Evaluation.</div>
         </div>
 
-        <!-- Target 2: Reiner Gamma Swirl -->
-        <div class="mission-card" onclick="updateDashboard('reiner-gamma', 'Firefly Aerospace Blue Ghost', '92% (High Yield)', 'Intermittent / Orbiter Relay', 'https://wikimedia.org')">
-            <img class="wiki-thumb" src="https://wikimedia.org" alt="Reiner Gamma Swirl via Wikipedia">
+        <div class="mission-card" onclick="updateDashboard('reiner-gamma', 'Firefly Aerospace Blue Ghost', '92% (High Yield)', 'Intermittent / Orbiter Relay')">
+            <img class="wiki-thumb" src="https://wikimedia.org" alt="Reiner Gamma Swirl">
             <div class="mission-name">🌀 Reiner Gamma Swirl</div>
             <div class="mission-meta">Objective: Magnetic anomaly exploration & Radiation impact tests.</div>
         </div>
 
-        <!-- Target 3: Mare Crisium -->
-        <div class="mission-card" onclick="updateDashboard('mare-crisium', 'Firefly Blue Ghost 1', '85% Standard Horizon', 'Direct Earth Line-of-Sight', 'https://wikimedia.org')">
-            <img class="wiki-thumb" src="https://wikimedia.org" alt="Mare Crisium via Wikipedia">
+        <div class="mission-card" onclick="updateDashboard('mare-crisium', 'Firefly Blue Ghost 1', '85% Standard Horizon', 'Direct Earth Line-of-Sight')">
+            <img class="wiki-thumb" src="https://wikimedia.org" alt="Mare Crisium">
             <div class="mission-name">🌑 Mare Crisium Basin</div>
             <div class="mission-meta">Objective: Regolith composition analysis and heat flow measurement.</div>
         </div>
     </div>
 
-    <!-- RIGHT MODULE: Map Explorer View and Telemetry Analytics -->
     <div id="main-viewport">
         <div id="map-container">
-            <!-- Main active window connecting straight to NASA mapping clusters -->
-            <iframe id="nasa-gis-frame" src="https://nasa.gov"></iframe>
+            <!-- Added full sandbox allowances so NASA's system can connect to your browser canvas frame -->
+            <iframe id="nasa-gis-frame" 
+                    src="https://nasa.gov" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen></iframe>
         </div>
 
-        <!-- HORIZON ANALYTICS EVALUATION MATRIX -->
         <div id="metrics-panel">
             <div class="metric-box">
                 <div class="metric-title">Active Payload Provider</div>
@@ -171,12 +167,10 @@
         </div>
     </div>
 
-    <!-- ⚡ DYNAMIC ROUTING SCRIPT -->
     <script>
-        function updateDashboard(locationKey, landerName, solarRating, commStatus, imageSrc) {
+        function updateDashboard(locationKey, landerName, solarRating, commStatus) {
             const frame = document.getElementById('nasa-gis-frame');
             
-            // Adjust coordinates based on NASA Trek API parameters to show the specific landing spots
             if (locationKey === 'south-pole') {
                 frame.src = "https://nasa.gov?position=0,-89.9,350000";
             } else if (locationKey === 'reiner-gamma') {
@@ -185,7 +179,6 @@
                 frame.src = "https://nasa.gov?position=59.1,18.4,400000";
             }
 
-            // Instantly calculate and update telemetry data fields for the presentation
             document.getElementById('val-lander').innerText = landerName;
             document.getElementById('val-solar').innerText = solarRating;
             document.getElementById('val-comm').innerText = commStatus;
