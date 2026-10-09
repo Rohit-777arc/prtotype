@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Artemis & CLPS Lunar Mission Explorer</title>
+    <style>
+        /* 🎨 Futuristic Dark Space Theme */
+        body {
+            margin: 0;
+            background-color: #050811;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #sidebar {
+            width: 320px;
+            background-color: #0b132b;
+            padding: 20px;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+            border-right: 1px solid #1c2541;
+        }
+        #main-viewport {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #02040a;
+        }
+        #map-container {
+            flex: 1;
+            position: relative;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        h1 {
+            font-size: 20px;
+            margin: 0;
+            color: #4fc3f7;
+            text-shadow: 0 0 10px rgba(79, 195, 247, 0.3);
+        }
+        .section-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .mission-card {
+            background-color: #1c2541;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .mission-card:hover {
+            border-color: #4fc3f7;
+            background-color: #222e50;
+            transform: translateY(-2px);
+        }
+        .wiki-thumb {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 4px;
+            background-color: #050811;
+        }
+        .mission-name {
+            font-weight: bold;
+            color: #ffffff;
+            font-size: 14px;
+        }
+        .mission-meta {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        /* Metrics panel explaining solar and comm horizons */
+        #metrics-panel {
+            background-color: #0b132b;
+            padding: 15px;
+            border-top: 1px solid #1c2541;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        .metric-box {
+            background-color: #1c2541;
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 4px solid #4fc3f7;
+        }
+        .metric-title {
+            font-size: 11px;
+            color: #94a3b8;
+            text-transform: uppercase;
+        }
+        .metric-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LEFT SIDEBAR: Mission controls and Wikipedia imagery -->
+    <div id="sidebar">
+        <h1>🚀 CLPS Mission Browser</h1>
+        <p style="font-size: 13px; margin: 0; color: #94a3b8;">Evaluate landing horizons, solar illumination arrays, and communication paths.</p>
+        
+        <hr style="border: 0; border-top: 1px solid #1c2541; margin: 5px 0;">
+        
+        <div class="section-title">Select Landing Target</div>
+
+        <!-- Target 1: Lunar South Pole (Intuitive Machines IM-2 / Nova-C) -->
+        <div class="mission-card" onclick="updateDashboard('south-pole', 'Intuitive Machines IM-2', '80% (Extreme Shadows)', 'Continuous DTE Window', 'https://wikimedia.org')">
+            <img class="wiki-thumb" src="https://wikimedia.org" alt="Nova-C Lander via Wikipedia">
+            <div class="mission-name">📍 Shackleton Crater (South Pole)</div>
+            <div class="mission-meta">Objective: Ice Drilling & Solar Power Volatiles Evaluation.</div>
+        </div>
+
+        <!-- Target 2: Reiner Gamma Swirl -->
+        <div class="mission-card" onclick="updateDashboard('reiner-gamma', 'Firefly Aerospace Blue Ghost', '92% (High Yield)', 'Intermittent / Orbiter Relay', 'https://wikimedia.org')">
+            <img class="wiki-thumb" src="https://wikimedia.org" alt="Reiner Gamma Swirl via Wikipedia">
+            <div class="mission-name">🌀 Reiner Gamma Swirl</div>
+            <div class="mission-meta">Objective: Magnetic anomaly exploration & Radiation impact tests.</div>
+        </div>
+
+        <!-- Target 3: Mare Crisium -->
+        <div class="mission-card" onclick="updateDashboard('mare-crisium', 'Firefly Blue Ghost 1', '85% Standard Horizon', 'Direct Earth Line-of-Sight', 'https://wikimedia.org')">
+            <img class="wiki-thumb" src="https://wikimedia.org" alt="Mare Crisium via Wikipedia">
+            <div class="mission-name">🌑 Mare Crisium Basin</div>
+            <div class="mission-meta">Objective: Regolith composition analysis and heat flow measurement.</div>
+        </div>
+    </div>
+
+    <!-- RIGHT MODULE: Map Explorer View and Telemetry Analytics -->
+    <div id="main-viewport">
+        <div id="map-container">
+            <!-- Main active window connecting straight to NASA mapping clusters -->
+            <iframe id="nasa-gis-frame" src="https://nasa.gov"></iframe>
+        </div>
+
+        <!-- HORIZON ANALYTICS EVALUATION MATRIX -->
+        <div id="metrics-panel">
+            <div class="metric-box">
+                <div class="metric-title">Active Payload Provider</div>
+                <div class="metric-value" id="val-lander">Select a Mission</div>
+            </div>
+            <div class="metric-box" style="border-left-color: #fbbf24;">
+                <div class="metric-title">Estimated Solar Horizon Potential</div>
+                <div class="metric-value" id="val-solar">--</div>
+            </div>
+            <div class="metric-box" style="border-left-color: #34d399;">
+                <div class="metric-title">Direct-To-Earth Comm Window</div>
+                <div class="metric-value" id="val-comm">--</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ⚡ DYNAMIC ROUTING SCRIPT -->
+    <script>
+        function updateDashboard(locationKey, landerName, solarRating, commStatus, imageSrc) {
+            const frame = document.getElementById('nasa-gis-frame');
+            
+            // Adjust coordinates based on NASA Trek API parameters to show the specific landing spots
+            if (locationKey === 'south-pole') {
+                frame.src = "https://nasa.gov?position=0,-89.9,350000";
+            } else if (locationKey === 'reiner-gamma') {
+                frame.src = "https://nasa.gov?position=-59,7.5,180000";
+            } else if (locationKey === 'mare-crisium') {
+                frame.src = "https://nasa.gov?position=59.1,18.4,400000";
+            }
+
+            // Instantly calculate and update telemetry data fields for the presentation
+            document.getElementById('val-lander').innerText = landerName;
+            document.getElementById('val-solar').innerText = solarRating;
+            document.getElementById('val-comm').innerText = commStatus;
+        }
+    </script>
+</body>
+</html>
