@@ -1,184 +1,285 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Artemis & CLPS Lunar Mission Explorer</title>
-    <style>
-        body {
-            margin: 0;
-            background-color: #050811;
-            color: #e2e8f0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-        #sidebar {
-            width: 320px;
-            background-color: #0b132b;
-            padding: 20px;
-            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.6);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            overflow-y: auto;
-            border-right: 1px solid #1c2541;
-        }
-        #main-viewport {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background-color: #02040a;
-        }
-        #map-container {
-            flex: 1;
-            position: relative;
-        }
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-        h1 {
-            font-size: 20px;
-            margin: 0;
-            color: #4fc3f7;
-            text-shadow: 0 0 10px rgba(79, 195, 247, 0.3);
-        }
-        .section-title {
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #64748b;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        .mission-card {
-            background-color: #1c2541;
-            border-radius: 8px;
-            padding: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: 1px solid transparent;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .mission-card:hover {
-            border-color: #4fc3f7;
-            background-color: #222e50;
-            transform: translateY(-2px);
-        }
-        .placeholder-thumb {
-            width: 100%;
-            height: 100px;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 12px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: white;
-        }
-        .mission-name {
-            font-weight: bold;
-            color: #ffffff;
-            font-size: 14px;
-        }
-        .mission-meta {
-            font-size: 12px;
-            color: #94a3b8;
-        }
-        #metrics-panel {
-            background-color: #0b132b;
-            padding: 15px;
-            border-top: 1px solid #1c2541;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-        }
-        .metric-box {
-            background-color: #1c2541;
-            padding: 10px;
-            border-radius: 6px;
-            border-left: 4px solid #4fc3f7;
-        }
-        .metric-title {
-            font-size: 11px;
-            color: #94a3b8;
-            text-transform: uppercase;
-        }
-        .metric-value {
-            font-size: 16px;
-            font-weight: bold;
-            color: #ffffff;
-            margin-top: 2px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lunar South Pole Sun &amp; Earth Planner (Prototype)</title>
+<style>
+  :root { --bg:#0b0f1a; --panel:#141b2d; --text:#e6e9f2; --muted:#8a93a8; --sun:#f5b83d; --earth:#60a5fa; --both:#4ade80; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,sans-serif; background:var(--bg); color:var(--text); }
+  header { padding:14px 20px; border-bottom:1px solid #222a40; }
+  header h1 { margin:0; font-size:1.25rem; }
+  header p { margin:4px 0 0; color:var(--muted); font-size:.82rem; }
+  .global { display:flex; flex-wrap:wrap; gap:14px; align-items:end; padding:12px 16px; }
+  .cols { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:0 16px 16px; }
+  @media (max-width:850px){ .cols { grid-template-columns:1fr; } }
+  .panel { background:var(--panel); border-radius:10px; padding:14px; }
+  label { font-size:.78rem; color:var(--muted); display:flex; flex-direction:column; gap:3px; }
+  select, input, button { background:#0b0f1a; color:var(--text); border:1px solid #2a3350; border-radius:6px; padding:6px 8px; font-size:.85rem; }
+  input[type=number] { width:90px; }
+  input[type=range] { width:100%; padding:0; }
+  .row { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:10px; }
+  canvas { width:100%; height:auto; display:block; border-radius:6px; background:#05070d; margin-top:8px; }
+  .stats { display:grid; grid-template-columns:repeat(2,1fr); gap:6px; margin-top:10px; font-size:.82rem; }
+  .stat { background:#0b0f1a; border-radius:6px; padding:6px 8px; }
+  .stat b { display:block; font-size:1.05rem; }
+  .stat span { color:var(--muted); font-size:.72rem; }
+  .legend span { margin-right:12px; font-size:.78rem; }
+  .dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:4px; }
+  .note { color:var(--muted); font-size:.74rem; padding:0 16px 16px; line-height:1.5; }
+  h3 { margin:0 0 10px; font-size:1rem; }
+</style>
 </head>
 <body>
+<header>
+  <h1>🌙 Lunar South Pole Sun &amp; Earth Planner</h1>
+  <p>Compare candidate landing sites and dates: Sun/Earth elevation vs. the horizon, power and direct-to-Earth windows. PROTOTYPE.</p>
+</header>
 
-    <div id="sidebar">
-        <h1>🚀 CLPS Mission Browser</h1>
-        <p style="font-size: 13px; margin: 0; color: #94a3b8;">Evaluate landing horizons, solar illumination arrays, and communication paths.</p>
-        
-        <hr style="border: 0; border-top: 1px solid #1c2541; margin: 5px 0;">
-        
-        <div class="section-title">Select Landing Target</div>
+<div class="global">
+  <label>Start date (UTC) <input type="date" id="start"></label>
+  <label>Duration
+    <select id="days">
+      <option value="30">30 days</option>
+      <option value="60" selected>60 days</option>
+      <option value="180">180 days</option>
+      <option value="365">1 year</option>
+    </select>
+  </label>
+  <div class="legend">
+    <span><i class="dot" style="background:var(--sun)"></i>Sun</span>
+    <span><i class="dot" style="background:var(--earth)"></i>Earth</span>
+    <span><i class="dot" style="background:var(--both)"></i>Both visible</span>
+  </div>
+</div>
 
-        <!-- Card 1 -->
-        <div class="mission-card" onclick="updateDashboard('south-pole', 'Intuitive Machines IM-2', '80% (Extreme Shadows)', 'Continuous DTE Window')">
-            <div class="placeholder-thumb" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6);">📍 LUNAR SOUTH POLE</div>
-            <div class="mission-name">Shackleton Crater</div>
-            <div class="mission-meta">Objective: Ice Drilling & Solar Power Volatiles Evaluation.</div>
-        </div>
+<div class="cols" id="cols"></div>
 
-        <!-- Card 2 -->
-        <div class="mission-card" onclick="updateDashboard('reiner-gamma', 'Firefly Aerospace Blue Ghost', '92% (High Yield)', 'Intermittent / Orbiter Relay')">
-            <div class="placeholder-thumb" style="background: linear-gradient(135deg, #581c87, #a855f7);">🌀 REINER GAMMA SWIRL</div>
-            <div class="mission-name">Magnetic Anomaly</div>
-            <div class="mission-meta">Objective: Exploration & Radiation impact tests.</div>
-        </div>
+<div class="cols" style="grid-template-columns:1fr">
+  <div class="panel">
+    <label>Time cursor: <span id="cursorLabel"></span>
+      <input type="range" id="cursor" min="0" max="100" value="0">
+    </label>
+    <button id="play" style="margin-top:8px">▶ Play</button>
+  </div>
+</div>
 
-        <!-- Card 3 -->
-        <div class="mission-card" onclick="updateDashboard('mare-crisium', 'Firefly Blue Ghost 1', '85% Standard Horizon', 'Direct Earth Line-of-Sight')">
-            <div class="placeholder-thumb" style="background: linear-gradient(135deg, #365314, #22c55e);">🌑 MARE CRISIUM BASIN</div>
-            <div class="mission-name">Mare Crisium Basin</div>
-            <div class="mission-meta">Objective: Regolith analysis and heat flow measurement.</div>
-        </div>
+<p class="note">
+  Method: low-precision lunar libration and subsolar-point formulas (accurate to roughly a few tenths of a degree), so treat results as indicative. At the poles the Sun stays within about 1.5° of the horizon, so small errors matter. The horizon mask is a single flat angle you set; real terrain needs LOLA/DEM horizon data from the official challenge datasets. Site coordinates are approximate. Validate against NASA SPICE or JPL Horizons before relying on any number.
+</p>
+
+<script>
+// ---------- Sites (APPROXIMATE; replace with official coordinates from challenge data) ----------
+const SITES = {
+  "South Pole (exact)":            { lat:-90.0, lon:0.0,    mask:0 },
+  "Shackleton rim":                { lat:-89.7, lon:129.0,  mask:1 },
+  "Haworth":                       { lat:-87.5, lon:-5.0,   mask:2 },
+  "de Gerlache rim":               { lat:-88.5, lon:-87.1,  mask:2 },
+  "Malapert massif":               { lat:-86.0, lon:0.0,    mask:0 },
+  "IM-1 Malapert A":               { lat:-80.1, lon:1.4,    mask:1 },
+  "Mons Mouton / IM-2":            { lat:-84.8, lon:29.2,   mask:1 },
+  "Nobile region":                 { lat:-85.4, lon:31.0,   mask:1 },
+  "Custom":                        { lat:-85.0, lon:20.0,   mask:0 }
+};
+
+// ---------- Math ----------
+const D2R = Math.PI/180, R2D = 180/Math.PI;
+const norm = a => ((a % 360) + 360) % 360;
+const wrap180 = a => { a = norm(a); return a > 180 ? a - 360 : a; };
+
+// Sub-Earth and sub-solar points on the Moon (selenographic lat/lon, degrees, east positive)
+function ephemeris(ms) {
+  const d = ms/86400000 + 2440587.5 - 2451545.0;
+  const s = x => Math.sin(x*D2R);
+  const g  = norm(357.529 + 0.98560028*d);
+  const lamS = norm(280.459 + 0.98564736*d) + 1.915*s(g) + 0.020*s(2*g);
+  const Lm = norm(218.316 + 13.176396*d), Mm = norm(134.963 + 13.064993*d);
+  const F  = norm(93.272 + 13.229350*d),  Dm = norm(297.850 + 12.190749*d);
+  const Om = norm(125.045 - 0.052954*d);
+  const lamM = Lm + 6.289*s(Mm) + 1.274*s(2*Dm-Mm) + 0.658*s(2*Dm) + 0.214*s(2*Mm) - 0.186*s(g);
+  const betM = 5.128*s(F) + 0.281*s(Mm+F) + 0.278*s(Mm-F) + 0.173*s(2*Dm-F);
+  const I = 1.54242, W = (lamM-Om)*D2R, b = betM*D2R, i = I*D2R;
+  const A = Math.atan2(Math.sin(W)*Math.cos(b)*Math.cos(i) - Math.sin(b)*Math.sin(i), Math.cos(W)*Math.cos(b))*R2D;
+  const lonE = wrap180(A - F);
+  const latE = Math.asin(-Math.sin(W)*Math.cos(b)*Math.sin(i) - Math.sin(b)*Math.cos(i))*R2D;
+  const lonS = wrap180(lonE + (lamS - lamM - 180));
+  const latS = I*s(lamS - Om);
+  return { lonE, latE, lonS, latS };
+}
+
+// Elevation/azimuth of a body whose sub-point is (lat0, lon0), seen from (lat, lon)
+function altAz(lat, lon, lat0, lon0) {
+  const p = lat*D2R, p0 = lat0*D2R, dl = (lon0-lon)*D2R;
+  const sinEl = Math.sin(p)*Math.sin(p0) + Math.cos(p)*Math.cos(p0)*Math.cos(dl);
+  const el = Math.asin(Math.max(-1, Math.min(1, sinEl)))*R2D;
+  const az = norm(Math.atan2(Math.cos(p0)*Math.sin(dl),
+                 Math.cos(p)*Math.sin(p0) - Math.sin(p)*Math.cos(p0)*Math.cos(dl))*R2D);
+  return { el, az };
+}
+
+// ---------- State ----------
+const STEP_H = 1;
+let eph = [], t0 = 0, N = 0, cursorIdx = 0, timer = null;
+const panels = [];
+
+function buildEphemeris() {
+  const startStr = document.getElementById("start").value;
+  t0 = Date.parse(startStr + "T00:00:00Z");
+  const days = +document.getElementById("days").value;
+  N = Math.floor(days*24/STEP_H) + 1;
+  eph = Array.from({ length: N }, (_, k) => ephemeris(t0 + k*STEP_H*3600e3));
+  const c = document.getElementById("cursor");
+  c.max = N - 1; cursorIdx = Math.min(cursorIdx, N - 1); c.value = cursorIdx;
+}
+
+// ---------- Site panel ----------
+function makePanel(label, defaultSite) {
+  const root = document.createElement("div");
+  root.className = "panel";
+  root.innerHTML = `
+    <h3>Site ${label}</h3>
+    <div class="row">
+      <label>Preset <select class="preset">${Object.keys(SITES).map(k => `<option>${k}</option>`).join("")}</select></label>
+      <label>Lat (°) <input type="number" class="lat" step="0.1" min="-90" max="90"></label>
+      <label>Lon (°E) <input type="number" class="lon" step="0.1" min="-180" max="180"></label>
+      <label>Horizon mask (°) <input type="number" class="mask" step="0.5" min="0" max="20"></label>
     </div>
+    <div class="stats"></div>
+    <canvas class="chart" width="560" height="220"></canvas>
+    <canvas class="strip" width="560" height="60"></canvas>
+    <canvas class="sky" width="560" height="230"></canvas>`;
+  document.getElementById("cols").appendChild(root);
 
-    <div id="main-viewport">
-        <div id="map-container">
-            <!-- Fully embeddable open-access 3D Moon Canvas -->
-            <iframe id="nasa-gis-frame" src="https://solarsystemscope.com"></iframe>
-        </div>
+  const p = { root, data: [],
+    preset: root.querySelector(".preset"), lat: root.querySelector(".lat"),
+    lon: root.querySelector(".lon"), mask: root.querySelector(".mask"),
+    stats: root.querySelector(".stats"),
+    chart: root.querySelector(".chart"), strip: root.querySelector(".strip"), sky: root.querySelector(".sky") };
 
-        <div id="metrics-panel">
-            <div class="metric-box">
-                <div class="metric-title">Active Payload Provider</div>
-                <div class="metric-value" id="val-lander">Select a Mission</div>
-            </div>
-            <div class="metric-box" style="border-left-color: #fbbf24;">
-                <div class="metric-title">Estimated Solar Horizon Potential</div>
-                <div class="metric-value" id="val-solar">--</div>
-            </div>
-            <div class="metric-box" style="border-left-color: #34d399;">
-                <div class="metric-title">Direct-To-Earth Comm Window</div>
-                <div class="metric-value" id="val-comm">--</div>
-            </div>
-        </div>
-    </div>
+  const loadPreset = () => {
+    const s = SITES[p.preset.value];
+    p.lat.value = s.lat; p.lon.value = s.lon; p.mask.value = s.mask; update(p);
+  };
+  p.preset.value = defaultSite;
+  p.preset.addEventListener("change", loadPreset);
+  [p.lat, p.lon, p.mask].forEach(el => el.addEventListener("input", () => { p.preset.value = "Custom"; update(p); }));
+  loadPreset();
+  panels.push(p);
+}
 
-    <script>
-        function updateDashboard(locationKey, landerName, solarRating, commStatus) {
-            document.getElementById('val-lander').innerText = landerName;
-            document.getElementById('val-solar').innerText = solarRating;
-            document.getElementById('val-comm').innerText = commStatus;
-        }
-    </script>
+function compute(p) {
+  const lat = +p.lat.value, lon = +p.lon.value, mask = +p.mask.value;
+  p.data = eph.map(e => {
+    const sun = altAz(lat, lon, e.latS, e.lonS), earth = altAz(lat, lon, e.latE, e.lonE);
+    return { sunEl:sun.el, sunAz:sun.az, eEl:earth.el, eAz:earth.az,
+             sunUp: sun.el > mask, eUp: earth.el > mask };
+  });
+  p.mask_ = mask;
+}
+
+function longestRun(arr, wanted) {
+  let best = 0, cur = 0;
+  arr.forEach(v => { if (v === wanted) { cur++; best = Math.max(best, cur); } else cur = 0; });
+  return best*STEP_H;
+}
+const fmtH = h => h >= 48 ? (h/24).toFixed(1) + " d" : h + " h";
+
+function renderStats(p) {
+  const n = p.data.length, pct = f => (100*p.data.filter(f).length/n).toFixed(0) + "%";
+  const sunArr = p.data.map(d => d.sunUp), eArr = p.data.map(d => d.eUp);
+  const items = [
+    [pct(d => d.sunUp), "Sun above horizon (power)"],
+    [pct(d => d.eUp),   "Earth above horizon (direct comms)"],
+    [pct(d => d.sunUp && d.eUp), "Sun AND Earth visible"],
+    [fmtH(longestRun(sunArr, false)), "Longest darkness"],
+    [fmtH(longestRun(eArr, false)),   "Longest comms outage"],
+    [fmtH(longestRun(sunArr, true)),  "Longest continuous sunlight"]
+  ];
+  p.stats.innerHTML = items.map(([v, l]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
+}
+
+function renderChart(p) {
+  const c = p.chart, g = c.getContext("2d"), W = c.width, H = c.height, pad = 30;
+  g.clearRect(0, 0, W, H);
+  const all = p.data.flatMap(d => [d.sunEl, d.eEl]);
+  let lo = Math.min(...all, 0) - 1, hi = Math.max(...all, p.mask_) + 1;
+  const X = k => pad + (W - pad - 8) * k/(N - 1), Y = v => H - 22 - (H - 34) * (v - lo)/(hi - lo);
+
+  g.fillStyle = "rgba(255,255,255,0.05)"; g.fillRect(pad, Y(p.mask_), W - pad - 8, Y(lo) - Y(p.mask_));
+  g.strokeStyle = "#3a4466"; g.setLineDash([4, 4]); g.beginPath(); g.moveTo(pad, Y(p.mask_)); g.lineTo(W - 8, Y(p.mask_)); g.stroke(); g.setLineDash([]);
+  g.fillStyle = "#8a93a8"; g.font = "10px sans-serif";
+  for (let v = Math.ceil(lo/2)*2; v <= hi; v += 2) g.fillText(v + "°", 2, Y(v) + 3);
+  const days = N*STEP_H/24, tick = days > 100 ? 30 : days > 40 ? 10 : 5;
+  for (let dd = 0; dd <= days; dd += tick) {
+    const x = X(dd*24/STEP_H);
+    g.fillText(new Date(t0 + dd*86400e3).toISOString().slice(5, 10), x - 12, H - 8);
+  }
+  const line = (key, color) => {
+    g.strokeStyle = color; g.lineWidth = 1.5; g.beginPath();
+    p.data.forEach((d, k) => k ? g.lineTo(X(k), Y(d[key])) : g.moveTo(X(k), Y(d[key])));
+    g.stroke();
+  };
+  line("sunEl", "#f5b83d"); line("eEl", "#60a5fa");
+  g.strokeStyle = "#fff"; g.lineWidth = 1; g.beginPath(); g.moveTo(X(cursorIdx), 4); g.lineTo(X(cursorIdx), H - 20); g.stroke();
+}
+
+function renderStrip(p) {
+  const c = p.strip, g = c.getContext("2d"), W = c.width, pad = 30, w = W - pad - 8;
+  g.clearRect(0, 0, W, c.height); g.font = "10px sans-serif"; g.fillStyle = "#8a93a8";
+  const rows = [["Sun", d => d.sunUp, "#f5b83d"], ["Earth", d => d.eUp, "#60a5fa"], ["Both", d => d.sunUp && d.eUp, "#4ade80"]];
+  rows.forEach(([name, f, col], r) => {
+    const y = 4 + r*18; g.fillStyle = "#8a93a8"; g.fillText(name, 0, y + 11);
+    g.fillStyle = "#1a2138"; g.fillRect(pad, y, w, 14);
+    g.fillStyle = col;
+    p.data.forEach((d, k) => { if (f(d)) g.fillRect(pad + w*k/N, y, Math.max(1, w/N + 0.5), 14); });
+  });
+  g.strokeStyle = "#fff"; g.beginPath(); g.moveTo(pad + w*cursorIdx/N, 0); g.lineTo(pad + w*cursorIdx/N, c.height); g.stroke();
+}
+
+function renderSky(p) {
+  const c = p.sky, g = c.getContext("2d"), W = c.width, H = c.height;
+  g.clearRect(0, 0, W, H);
+  const ELO = -10, EHI = 14, X = az => 10 + (W - 20)*az/360, Y = el => H - 22 - (H - 34)*(el - ELO)/(EHI - ELO);
+  g.fillStyle = "#1c2236"; g.fillRect(0, Y(p.mask_), W, H);
+  g.strokeStyle = "#8a93a8"; g.beginPath(); g.moveTo(0, Y(p.mask_)); g.lineTo(W, Y(p.mask_)); g.stroke();
+  g.fillStyle = "#8a93a8"; g.font = "10px sans-serif";
+  [["N", 0], ["E", 90], ["S", 180], ["W", 270], ["N", 360]].forEach(([l, a]) => g.fillText(l, X(a) - 3, H - 8));
+  g.fillText("horizon view (azimuth → elevation)", 8, 12);
+  const d = p.data[cursorIdx];
+  const body = (az, el, col, name, r) => {
+    g.fillStyle = col; g.beginPath(); g.arc(X(az), Y(el), r, 0, 6.2832); g.fill();
+    g.fillStyle = "#e6e9f2"; g.fillText(`${name} ${el.toFixed(1)}°`, Math.min(X(az) + 9, W - 80), Y(el) - 8);
+  };
+  body(d.sunAz, d.sunEl, "#f5b83d", "Sun", 6);
+  body(d.eAz, d.eEl, "#60a5fa", "Earth", 6);
+}
+
+function update(p) { compute(p); renderStats(p); renderAll(p); }
+function renderAll(p) { renderChart(p); renderStrip(p); renderSky(p); }
+
+function setCursorLabel() {
+  document.getElementById("cursorLabel").textContent = new Date(t0 + cursorIdx*STEP_H*3600e3).toISOString().slice(0, 16).replace("T", " ") + " UTC";
+}
+
+// ---------- Wiring ----------
+document.getElementById("start").value = new Date().toISOString().slice(0, 10);
+buildEphemeris();
+makePanel("A", "Malapert massif");
+makePanel("B", "Shackleton rim");
+setCursorLabel();
+
+document.getElementById("start").addEventListener("change", () => { buildEphemeris(); panels.forEach(update); setCursorLabel(); });
+document.getElementById("days").addEventListener("change", () => { buildEphemeris(); panels.forEach(update); setCursorLabel(); });
+document.getElementById("cursor").addEventListener("input", e => { cursorIdx = +e.target.value; setCursorLabel(); panels.forEach(renderAll); });
+document.getElementById("play").addEventListener("click", e => {
+  if (timer) { clearInterval(timer); timer = null; e.target.textContent = "▶ Play"; return; }
+  e.target.textContent = "⏸ Pause";
+  timer = setInterval(() => {
+    cursorIdx = (cursorIdx + 3) % N; document.getElementById("cursor").value = cursorIdx;
+    setCursorLabel(); panels.forEach(renderAll);
+  }, 60);
+});
+</script>
 </body>
 </html>
