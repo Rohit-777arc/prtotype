@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CLPS Lunar Mission Browser | NASA Space Apps 2026</title>
+  <title>CLPS Lunar Mission Browser | Interactive South Pole</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -18,473 +18,648 @@
     }
   </script>
   <style>
-    body { background: #0B0F19; background-image: radial-gradient(ellipse at 20% 0%, rgba(59,130,246,0.08), transparent 50%); }
-    .glass { background: rgba(30,41,59,0.55); backdrop-filter: blur(16px); border: 1px solid rgba(51,65,85,0.6); border-radius: 1rem; }
-    .control-btn { width:40px;height:40px;border-radius:0.75rem;background:rgba(30,41,59,0.8);border:1px solid rgba(51,65,85,0.7);color:#e2e8f0;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:0.15s; }
-    .control-btn:hover { background:rgba(59,130,246,0.2);border-color:#3B82F6; }
+    body { background: #0B0F19; background-image: radial-gradient(ellipse at 20% 0%, rgba(59,130,246,0.07), transparent 55%); }
+    .glass { background: rgba(30,41,59,0.6); backdrop-filter: blur(14px); border: 1px solid rgba(51,65,85,0.55); border-radius: 1rem; }
+    .control-btn { width:42px;height:42px;border-radius:0.75rem;background:rgba(30,41,59,0.85);border:1px solid rgba(51,65,85,0.7);color:#e2e8f0;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;transition:0.15s; }
+    .control-btn:hover { background:rgba(59,130,246,0.25);border-color:#3B82F6; }
     .status-badge { font-size:0.65rem;font-weight:600;padding:0.2rem 0.55rem;border-radius:9999px;text-transform:uppercase;font-family:monospace; }
-    .status-green { background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.35); }
-    .status-amber { background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.35); }
-    .status-red { background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.35); }
-    .site-card { background:rgba(30,41,59,0.5);border:1px solid rgba(51,65,85,0.55);border-radius:0.75rem;padding:1rem;cursor:pointer;transition:0.2s; }
-    .site-card:hover { border-color:rgba(59,130,246,0.5);transform:translateY(-2px); }
-    .site-card.active { border-color:#3B82F6;background:rgba(59,130,246,0.12); }
-    input[type=range] { -webkit-appearance:none;height:6px;border-radius:9999px;background:#334155; }
-    input[type=range]::-webkit-slider-thumb { -webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,#3B82F6,#60A5FA);cursor:pointer; }
+    .status-green { background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.4); }
+    .status-amber { background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.4); }
+    .status-red { background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.4); }
+    input[type=range] { -webkit-appearance:none;height:7px;border-radius:9999px;background:#334155; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#3B82F6,#60A5FA);cursor:pointer;box-shadow:0 0 8px rgba(59,130,246,0.5); }
+    canvas { cursor: crosshair; }
+    .hint { font-size:0.7rem;color:#94a3b8; }
   </style>
 </head>
 <body class="text-slate-200 min-h-screen font-sans antialiased">
 
-<header class="border-b border-space-600/60 bg-space-800/80 backdrop-blur sticky top-0 z-50">
-  <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
+<header class="border-b border-space-600/50 bg-space-800/80 backdrop-blur sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
     <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-nasa-blue to-indigo-600 flex items-center justify-center text-white font-bold">☾</div>
+      <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-nasa-blue to-indigo-600 flex items-center justify-center text-white font-bold text-lg">☾</div>
       <div>
-        <h1 class="text-xl font-bold text-white">CLPS Lunar Mission Browser</h1>
-        <p class="text-xs text-slate-400 font-mono">NASA Space Apps 2026 · South Pole Lighting & Comms</p>
+        <h1 class="text-lg font-bold text-white">CLPS Lunar Mission Browser</h1>
+        <p class="text-xs text-slate-400 font-mono">Click map → place lander · Drag to rotate · Time slider = day/night</p>
       </div>
     </div>
     <div class="flex items-center gap-3">
       <span id="sim-status" class="px-3 py-1 rounded-full text-xs font-mono bg-space-700 border border-space-600 text-green-400">● LIVE</span>
-      <button id="btn-export" class="px-4 py-2 rounded-lg bg-nasa-blue hover:bg-nasa-accent text-white text-sm font-medium flex items-center gap-2">Export Report</button>
+      <button id="btn-export" class="px-4 py-2 rounded-lg bg-nasa-blue hover:bg-blue-400 text-white text-sm font-medium">Export JSON</button>
     </div>
   </div>
 </header>
 
-<main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
-  <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-    <div class="glass p-5">
-      <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Landing Site</label>
-      <select id="site-select" class="w-full bg-space-800 border border-space-600 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-nasa-blue"></select>
-      <div id="site-meta" class="mt-4 space-y-1 text-xs font-mono text-slate-400"></div>
-    </div>
-    <div class="glass p-5 lg:col-span-2">
-      <div class="flex flex-wrap items-end gap-4 mb-4">
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Mission Date (UTC)</label>
-          <input type="date" id="date-picker" class="bg-space-800 border border-space-600 rounded-lg px-3 py-2.5 text-sm" />
-        </div>
+<main class="max-w-7xl mx-auto px-4 py-5 space-y-5">
+
+  <!-- TIME CONTROLS -->
+  <section class="glass p-4">
+    <div class="flex flex-wrap items-end gap-4 mb-3">
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Mission Day (0–28 ≈ one lunar month)</label>
         <div class="flex items-center gap-2">
-          <button id="btn-play" class="control-btn" title="Play/Pause">▶</button>
-          <button id="btn-ff" class="control-btn" title="Fast Forward">⏩</button>
+          <button id="btn-play" class="control-btn" title="Play / Pause">▶</button>
+          <button id="btn-ff" class="control-btn" title="Speed ×4">⏩</button>
           <button id="btn-reset" class="control-btn" title="Reset">↺</button>
         </div>
-        <div class="ml-auto text-right">
-          <p class="text-xs text-slate-400 uppercase">Simulated Day</p>
-          <p id="day-label" class="text-lg font-mono font-semibold text-white">Day 0 / 28</p>
+      </div>
+      <div class="flex-1 min-w-[200px]">
+        <input type="range" id="timeline" min="0" max="28" step="0.05" value="0" class="w-full" />
+        <div class="flex justify-between text-[10px] font-mono text-slate-500 mt-1">
+          <span>0d (start)</span><span>7d</span><span>14d</span><span>21d</span><span>28d</span>
         </div>
       </div>
-      <input type="range" id="timeline" min="0" max="28" step="0.05" value="0" class="w-full" />
-      <div class="flex justify-between text-[10px] font-mono text-slate-500 mt-1"><span>0d</span><span>7d</span><span>14d</span><span>21d</span><span>28d</span></div>
+      <div class="text-right">
+        <p class="text-xs text-slate-400 uppercase">Current</p>
+        <p id="day-label" class="text-xl font-mono font-semibold text-white">Day 0.0</p>
+        <p id="phase-label" class="text-xs font-mono text-amber-300">Day side</p>
+      </div>
     </div>
+    <p class="hint">In deep craters the Sun stays below the rim for long periods → no power & no Direct-to-Earth link.</p>
   </section>
 
-  <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-    <div class="glass p-5 xl:col-span-2">
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300">360° Local Horizon</h2>
+  <!-- MAIN GRID -->
+  <section class="grid grid-cols-1 xl:grid-cols-5 gap-5">
+
+    <!-- SOUTH POLE MAP (clickable + draggable) -->
+    <div class="glass p-4 xl:col-span-2">
+      <div class="flex justify-between items-center mb-2">
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300">South Pole Map – Click to land</h2>
+        <span class="text-xs font-mono text-slate-500">Drag to rotate</span>
+      </div>
+      <div class="relative bg-space-900 rounded-xl overflow-hidden border border-space-600/50">
+        <canvas id="map-canvas" width="480" height="480" class="w-full h-auto block"></canvas>
+        <div class="absolute bottom-2 left-2 right-2 text-[10px] font-mono text-slate-400 bg-black/40 rounded px-2 py-1">
+          Click any point → places lander · Darker = deeper crater (less Sun & Earth)
+        </div>
+      </div>
+      <div id="click-info" class="mt-3 text-xs font-mono text-slate-300 space-y-1">
+        <div>Lat: — · Lon: —</div>
+        <div>Terrain height: —</div>
+        <div class="text-slate-500">Click the map to choose a landing site</div>
+      </div>
+    </div>
+
+    <!-- HORIZON VIEW -->
+    <div class="glass p-4 xl:col-span-3">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300">360° Local Horizon at Lander</h2>
         <div class="flex gap-4 text-xs font-mono">
           <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-yellow-400"></span> Sun</span>
           <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span> Earth</span>
-          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-slate-500"></span> Terrain</span>
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-slate-500"></span> Terrain rim</span>
         </div>
       </div>
-      <div class="relative bg-space-900/80 rounded-xl overflow-hidden border border-space-600/50">
-        <canvas id="horizon-canvas" width="900" height="420" class="w-full h-auto block"></canvas>
+      <div class="relative bg-space-900/90 rounded-xl overflow-hidden border border-space-600/50">
+        <canvas id="horizon-canvas" width="900" height="380" class="w-full h-auto block"></canvas>
+      </div>
+
+      <!-- LIVE METRICS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+        <div class="bg-space-800/70 rounded-xl p-4 border border-space-600/40">
+          <div class="flex justify-between mb-2">
+            <span class="text-xs uppercase text-slate-400 font-semibold">Sunlight / Power</span>
+            <span id="power-status" class="status-badge status-amber">—</span>
+          </div>
+          <div class="flex items-end gap-2">
+            <span id="power-pct" class="text-3xl font-bold font-mono text-white">0%</span>
+            <span class="text-sm text-slate-400 mb-1">availability</span>
+          </div>
+          <div class="w-full h-2 bg-space-700 rounded-full mt-2 overflow-hidden">
+            <div id="power-bar" class="h-full bg-gradient-to-r from-amber-500 to-yellow-400 transition-all duration-200" style="width:0%"></div>
+          </div>
+          <p id="sun-detail" class="mt-2 text-xs font-mono text-slate-400">Az —° · El —°</p>
+        </div>
+
+        <div class="bg-space-800/70 rounded-xl p-4 border border-space-600/40">
+          <div class="flex justify-between mb-2">
+            <span class="text-xs uppercase text-slate-400 font-semibold">Direct-to-Earth</span>
+            <span id="dte-status" class="status-badge status-amber">—</span>
+          </div>
+          <div class="flex items-end gap-2">
+            <span id="dte-pct" class="text-3xl font-bold font-mono text-white">0%</span>
+            <span class="text-sm text-slate-400 mb-1">uptime</span>
+          </div>
+          <div class="w-full h-2 bg-space-700 rounded-full mt-2 overflow-hidden">
+            <div id="dte-bar" class="h-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all duration-200" style="width:0%"></div>
+          </div>
+          <p id="earth-detail" class="mt-2 text-xs font-mono text-slate-400">Az —° · El —°</p>
+        </div>
+      </div>
+
+      <div class="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
+        <div class="bg-space-800/50 rounded-lg p-2 text-center">
+          <div class="text-slate-500">Sun visible</div>
+          <div id="sun-visible" class="font-semibold">—</div>
+        </div>
+        <div class="bg-space-800/50 rounded-lg p-2 text-center">
+          <div class="text-slate-500">Earth visible</div>
+          <div id="earth-visible" class="font-semibold">—</div>
+        </div>
+        <div class="bg-space-800/50 rounded-lg p-2 text-center">
+          <div class="text-slate-500">Sun margin</div>
+          <div id="sun-margin">—°</div>
+        </div>
+        <div class="bg-space-800/50 rounded-lg p-2 text-center">
+          <div class="text-slate-500">Earth margin</div>
+          <div id="earth-margin">—°</div>
+        </div>
       </div>
     </div>
-
-    <div class="space-y-4">
-      <div class="glass p-5">
-        <div class="flex justify-between mb-3">
-          <h3 class="text-xs font-semibold uppercase text-slate-400">Power Generation</h3>
-          <span id="power-status" class="status-badge status-amber">PARTIAL</span>
-        </div>
-        <div class="flex items-end gap-2 mb-2">
-          <span id="power-pct" class="text-3xl font-bold font-mono text-white">0%</span>
-          <span class="text-sm text-slate-400 mb-1">Sun availability</span>
-        </div>
-        <div class="w-full h-2 bg-space-700 rounded-full overflow-hidden">
-          <div id="power-bar" class="h-full bg-gradient-to-r from-amber-500 to-yellow-400 transition-all" style="width:0%"></div>
-        </div>
-        <p id="sun-detail" class="mt-2 text-xs font-mono text-slate-400">Az: —° · El: —°</p>
-      </div>
-
-      <div class="glass p-5">
-        <div class="flex justify-between mb-3">
-          <h3 class="text-xs font-semibold uppercase text-slate-400">Direct-to-Earth</h3>
-          <span id="dte-status" class="status-badge status-amber">PARTIAL</span>
-        </div>
-        <div class="flex items-end gap-2 mb-2">
-          <span id="dte-pct" class="text-3xl font-bold font-mono text-white">0%</span>
-          <span class="text-sm text-slate-400 mb-1">Comms uptime</span>
-        </div>
-        <div class="w-full h-2 bg-space-700 rounded-full overflow-hidden">
-          <div id="dte-bar" class="h-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all" style="width:0%"></div>
-        </div>
-        <p id="earth-detail" class="mt-2 text-xs font-mono text-slate-400">Az: —° · El: —°</p>
-      </div>
-
-      <div class="glass p-5">
-        <h3 class="text-xs font-semibold uppercase text-slate-400 mb-3">Vector Status</h3>
-        <div class="space-y-2 text-sm font-mono">
-          <div class="flex justify-between"><span class="text-slate-400">Sun above horizon</span><span id="sun-visible">—</span></div>
-          <div class="flex justify-between"><span class="text-slate-400">Earth above horizon</span><span id="earth-visible">—</span></div>
-          <div class="flex justify-between"><span class="text-slate-400">Occlusion margin (Sun)</span><span id="sun-margin">—°</span></div>
-          <div class="flex justify-between"><span class="text-slate-400">Occlusion margin (Earth)</span><span id="earth-margin">—°</span></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-3">Candidate Sites</h2>
-    <div id="site-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
   </section>
 </main>
 
-<footer class="border-t border-space-600/40 mt-12 py-6 text-center text-xs text-slate-500 font-mono">
-  CLPS Lunar Mission Browser · NASA Space Apps Challenge 2026 · Open Source
+<footer class="border-t border-space-600/30 mt-10 py-5 text-center text-xs text-slate-500 font-mono">
+  CLPS Lunar Mission Browser · Click map to place lander · Time slider shows night & crater shadow effects
 </footer>
 
 <script>
-/* ========== SITES DATA ========== */
-const SITES = [
-  {
-    id: 'shackleton-ridge',
-    name: 'Shackleton Connecting Ridge',
-    lat: -89.9, lon: 0.0, elev: 0,
-    description: 'Near-permanent illumination candidate near Shackleton crater rim.',
-    horizonMask: generateMask(8, 22, [0, 45, 90, 135, 180, 225, 270, 315])
-  },
-  {
-    id: 'nobile',
-    name: 'Nobile Crater',
-    lat: -85.2, lon: 35.5, elev: -1000,
-    description: 'Large south-pole crater with potential ice deposits.',
-    horizonMask: generateMask(12, 28, [30, 60, 120, 200, 250])
-  },
-  {
-    id: 'malapert',
-    name: 'Malapert Massif',
-    lat: -85.5, lon: -0.5, elev: 5000,
-    description: 'High massif offering good Earth visibility windows.',
-    horizonMask: generateMask(5, 18, [90, 180, 270])
-  },
-  {
-    id: 'de-gerlache',
-    name: 'de Gerlache Rim',
-    lat: -88.5, lon: -30.0, elev: 200,
-    description: 'Rim site with mixed illumination and communication potential.',
-    horizonMask: generateMask(10, 25, [0, 100, 160, 280])
-  }
-];
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = {
+  day: 0,
+  playing: false,
+  speed: 1,
+  timer: null,
+  // lander position on south-pole map (polar coords)
+  landerR: 0.35,          // 0 = pole, 1 = edge of map
+  landerTheta: 0.4,       // radians
+  mapRotation: 0,         // drag rotation
+  isDragging: false,
+  lastMouse: null,
+  // derived
+  lat: -89.5,
+  lon: 0,
+  terrainHeight: 0,       // relative (negative = crater)
+  horizonMask: new Array(360).fill(8)
+};
 
-function generateMask(base, peak, highAz) {
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const $ = id => document.getElementById(id);
+function deg2rad(d){ return d * Math.PI / 180; }
+function rad2deg(r){ return r * 180 / Math.PI; }
+function normalizeAz(az){ return ((az % 360) + 360) % 360; }
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+
+/* Simplex-ish noise for terrain */
+function noise2(x, y) {
+  const n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+  return n - Math.floor(n);
+}
+function fbm(x, y) {
+  let v = 0, a = 0.5;
+  for (let i = 0; i < 4; i++) {
+    v += a * noise2(x, y);
+    x *= 2; y *= 2; a *= 0.5;
+  }
+  return v;
+}
+
+/* Generate realistic-ish south-pole terrain height (negative = crater) */
+function terrainAt(r, theta) {
+  // r: 0..1 from pole
+  const x = r * Math.cos(theta);
+  const y = r * Math.sin(theta);
+  let h = fbm(x * 3.2, y * 3.2) * 2.2 - 0.9; // base
+  // force a few deep craters
+  const craters = [
+    { x: 0.25, y: 0.15, r: 0.18, d: -2.8 },
+    { x: -0.3, y: 0.2, r: 0.22, d: -3.1 },
+    { x: 0.1, y: -0.35, r: 0.15, d: -2.4 },
+    { x: -0.15, y: -0.25, r: 0.12, d: -1.9 }
+  ];
+  for (const c of craters) {
+    const dx = x - c.x, dy = y - c.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < c.r) {
+      const t = dist / c.r;
+      h += c.d * (1 - t*t);
+    }
+  }
+  // rim ridges near some craters
+  h += Math.sin(r * 18 + theta * 3) * 0.15 * r;
+  return h;
+}
+
+/* Build 360° horizon mask from local terrain height + surrounding */
+function buildHorizonMask(r, theta, localH) {
   const mask = [];
-  for (let i = 0; i < 360; i++) {
-    let h = base + Math.sin(i * Math.PI / 180 * 3) * 4;
-    if (highAz.some(a => Math.abs(((i - a + 180) % 360) - 180) < 25)) h = peak - Math.random() * 4;
-    mask.push(Math.max(0, h + (Math.random() - 0.5) * 2));
+  for (let az = 0; az < 360; az++) {
+    const rad = deg2rad(az);
+    // sample a few points outward
+    let maxEl = 2;
+    for (let dist = 0.04; dist < 0.45; dist += 0.04) {
+      const nr = clamp(r + dist * Math.cos(rad + state.mapRotation), 0, 0.98);
+      const ntheta = theta + dist * Math.sin(rad + state.mapRotation) / Math.max(r, 0.05);
+      const h = terrainAt(nr, ntheta);
+      const elev = Math.atan2((h - localH) * 18, dist * 90) * 180 / Math.PI; // rough
+      if (elev > maxEl) maxEl = elev;
+    }
+    // floor & ceiling
+    maxEl = clamp(maxEl + (Math.random()-0.5)*1.5, 1, 32);
+    mask.push(maxEl);
   }
   return mask;
 }
 
-/* ========== ASTRONOMY (simplified lunar model) ========== */
-function deg2rad(d) { return d * Math.PI / 180; }
-function rad2deg(r) { return r * 180 / Math.PI; }
-function normalizeAz(az) { return ((az % 360) + 360) % 360; }
-
-function getSunPosition(day, lat) {
-  // Simplified: Sun circles around celestial south pole over ~28 days
-  const period = 28;
-  const phase = (day / period) * 2 * Math.PI;
-  const sunDec = -90 + 1.5 * Math.sin(phase); // stays near south pole
-  const hourAngle = phase * 180 / Math.PI;
-  const elev = Math.asin(
-    Math.sin(deg2rad(lat)) * Math.sin(deg2rad(sunDec)) +
-    Math.cos(deg2rad(lat)) * Math.cos(deg2rad(sunDec)) * Math.cos(deg2rad(hourAngle))
-  );
+/* ============================================================
+   ASTRONOMY (simplified but directionally correct for south pole)
+   ============================================================ */
+function getSun(day, lat) {
+  // Sun slowly circles, stays low near south pole
+  const phase = (day / 28) * Math.PI * 2;
+  const dec = -89.5 + 1.8 * Math.sin(phase);          // solar declination
+  const ha = phase * 180 / Math.PI;                    // hour angle
+  const sinEl = Math.sin(deg2rad(lat)) * Math.sin(deg2rad(dec)) +
+                Math.cos(deg2rad(lat)) * Math.cos(deg2rad(dec)) * Math.cos(deg2rad(ha));
+  const el = rad2deg(Math.asin(clamp(sinEl, -1, 1)));
   let az = Math.atan2(
-    -Math.sin(deg2rad(hourAngle)),
-    Math.tan(deg2rad(sunDec)) * Math.cos(deg2rad(lat)) - Math.sin(deg2rad(lat)) * Math.cos(deg2rad(hourAngle))
+    -Math.sin(deg2rad(ha)),
+    Math.tan(deg2rad(dec)) * Math.cos(deg2rad(lat)) - Math.sin(deg2rad(lat)) * Math.cos(deg2rad(ha))
   );
-  return { az: normalizeAz(rad2deg(az)), el: rad2deg(elev) };
+  return { az: normalizeAz(rad2deg(az)), el };
 }
 
-function getEarthPosition(day, lat, lon) {
-  // Earth is nearly fixed in lunar sky (libration simplified)
-  const phase = (day / 28) * 2 * Math.PI * 0.1; // slow drift
-  const earthEl = 5 + 8 * Math.sin(phase + lon * 0.01);
-  const earthAz = normalizeAz(180 + lon * 0.3 + 15 * Math.sin(phase));
-  return { az: earthAz, el: earthEl };
+function getEarth(day, lon) {
+  // Earth is almost fixed; small libration
+  const phase = day / 28 * Math.PI * 2 * 0.15;
+  const el = 4 + 9 * Math.sin(phase + lon * 0.008);
+  const az = normalizeAz(175 + lon * 0.4 + 12 * Math.cos(phase));
+  return { az, el };
 }
 
-function isAboveHorizon(az, el, mask) {
+function checkOcclusion(az, el, mask) {
   const idx = Math.floor(normalizeAz(az)) % 360;
-  const terrainEl = mask[idx] || 0;
-  return { visible: el > terrainEl, margin: el - terrainEl, terrainEl };
+  const rim = mask[idx] || 5;
+  return { visible: el > rim, margin: el - rim, rim };
 }
 
-/* ========== APP STATE ========== */
-let state = {
-  site: SITES[0],
-  day: 0,
-  playing: false,
-  speed: 1,
-  timer: null
-};
+/* ============================================================
+   MAP CANVAS (south pole view)
+   ============================================================ */
+const mapCanvas = $('map-canvas');
+const mapCtx = mapCanvas.getContext('2d');
 
-/* ========== DOM ========== */
-const $ = id => document.getElementById(id);
-const canvas = $('horizon-canvas');
-const ctx = canvas.getContext('2d');
+function drawMap() {
+  const w = mapCanvas.width, h = mapCanvas.height;
+  const cx = w/2, cy = h/2, R = w*0.46;
+  mapCtx.clearRect(0,0,w,h);
 
-function init() {
-  // Populate select
-  const sel = $('site-select');
-  SITES.forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s.id; opt.textContent = s.name;
-    sel.appendChild(opt);
-  });
-  sel.value = state.site.id;
-  sel.addEventListener('change', e => {
-    state.site = SITES.find(s => s.id === e.target.value);
-    updateSiteMeta();
-    renderCards();
-    update();
-  });
+  // dark background
+  mapCtx.fillStyle = '#0B0F19';
+  mapCtx.fillRect(0,0,w,h);
 
-  // Date picker default
-  const today = new Date();
-  $('date-picker').value = today.toISOString().slice(0,10);
-  $('date-picker').addEventListener('change', () => { state.day = 0; $('timeline').value = 0; update(); });
+  // terrain height field
+  const img = mapCtx.createImageData(w, h);
+  for (let py = 0; py < h; py++) {
+    for (let px = 0; px < w; px++) {
+      const dx = (px - cx) / R;
+      const dy = (py - cy) / R;
+      const r = Math.sqrt(dx*dx + dy*dy);
+      const i = (py * w + px) * 4;
+      if (r > 1.02) {
+        img.data[i] = 8; img.data[i+1] = 10; img.data[i+2] = 18; img.data[i+3] = 255;
+        continue;
+      }
+      const theta = Math.atan2(dy, dx) - state.mapRotation;
+      const height = terrainAt(Math.min(r, 0.99), theta);
+      // color: deep crater = dark blue-black, high = light gray
+      const t = clamp((height + 2.5) / 4.5, 0, 1);
+      const shade = Math.floor(18 + t * 90);
+      img.data[i]   = shade;
+      img.data[i+1] = shade + 4;
+      img.data[i+2] = shade + 12;
+      img.data[i+3] = 255;
+    }
+  }
+  mapCtx.putImageData(img, 0, 0);
 
-  // Timeline
-  $('timeline').addEventListener('input', e => {
-    state.day = parseFloat(e.target.value);
-    update();
-  });
+  // grid rings
+  mapCtx.strokeStyle = 'rgba(100,116,139,0.25)';
+  mapCtx.lineWidth = 1;
+  for (let rr = 0.25; rr <= 1; rr += 0.25) {
+    mapCtx.beginPath();
+    mapCtx.arc(cx, cy, rr * R, 0, Math.PI*2);
+    mapCtx.stroke();
+  }
 
-  // Controls
-  $('btn-play').addEventListener('click', togglePlay);
-  $('btn-ff').addEventListener('click', () => { state.speed = state.speed === 1 ? 4 : 1; update(); });
-  $('btn-reset').addEventListener('click', () => { state.day = 0; $('timeline').value = 0; stopPlay(); update(); });
-  $('btn-export').addEventListener('click', exportReport);
+  // pole marker
+  mapCtx.fillStyle = '#ef4444';
+  mapCtx.beginPath();
+  mapCtx.arc(cx, cy, 4, 0, Math.PI*2);
+  mapCtx.fill();
+  mapCtx.fillStyle = '#fca5a5';
+  mapCtx.font = '10px monospace';
+  mapCtx.fillText('SP', cx + 8, cy + 4);
 
-  updateSiteMeta();
-  renderCards();
+  // lander
+  const lx = cx + state.landerR * R * Math.cos(state.landerTheta + state.mapRotation);
+  const ly = cy + state.landerR * R * Math.sin(state.landerTheta + state.mapRotation);
+  mapCtx.beginPath();
+  mapCtx.arc(lx, ly, 9, 0, Math.PI*2);
+  mapCtx.fillStyle = '#22c55e';
+  mapCtx.fill();
+  mapCtx.strokeStyle = '#fff';
+  mapCtx.lineWidth = 2;
+  mapCtx.stroke();
+  mapCtx.fillStyle = '#86efac';
+  mapCtx.font = '11px monospace';
+  mapCtx.fillText('LANDER', lx + 12, ly + 4);
+
+  // Sun direction indicator (approximate)
+  const sun = getSun(state.day, state.lat);
+  const sunAng = deg2rad(sun.az) + state.mapRotation;
+  mapCtx.strokeStyle = 'rgba(250,204,21,0.6)';
+  mapCtx.lineWidth = 2;
+  mapCtx.beginPath();
+  mapCtx.moveTo(cx, cy);
+  mapCtx.lineTo(cx + Math.cos(sunAng)*R*0.95, cy + Math.sin(sunAng)*R*0.95);
+  mapCtx.stroke();
+  mapCtx.fillStyle = '#FACC15';
+  mapCtx.beginPath();
+  mapCtx.arc(cx + Math.cos(sunAng)*R*0.92, cy + Math.sin(sunAng)*R*0.92, 7, 0, Math.PI*2);
+  mapCtx.fill();
+
+  // Earth direction
+  const earth = getEarth(state.day, state.lon);
+  const earthAng = deg2rad(earth.az) + state.mapRotation;
+  mapCtx.strokeStyle = 'rgba(96,165,250,0.55)';
+  mapCtx.beginPath();
+  mapCtx.moveTo(cx, cy);
+  mapCtx.lineTo(cx + Math.cos(earthAng)*R*0.85, cy + Math.sin(earthAng)*R*0.85);
+  mapCtx.stroke();
+  mapCtx.fillStyle = '#60A5FA';
+  mapCtx.beginPath();
+  mapCtx.arc(cx + Math.cos(earthAng)*R*0.82, cy + Math.sin(earthAng)*R*0.82, 6, 0, Math.PI*2);
+  mapCtx.fill();
+}
+
+/* Map interaction */
+mapCanvas.addEventListener('mousedown', e => {
+  const rect = mapCanvas.getBoundingClientRect();
+  const scaleX = mapCanvas.width / rect.width;
+  const scaleY = mapCanvas.height / rect.height;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const my = (e.clientY - rect.top) * scaleY;
+  state.isDragging = true;
+  state.lastMouse = { x: mx, y: my };
+});
+window.addEventListener('mouseup', () => { state.isDragging = false; });
+mapCanvas.addEventListener('mousemove', e => {
+  if (!state.isDragging) return;
+  const rect = mapCanvas.getBoundingClientRect();
+  const scaleX = mapCanvas.width / rect.width;
+  const scaleY = mapCanvas.height / rect.height;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const my = (e.clientY - rect.top) * scaleY;
+  const dx = mx - state.lastMouse.x;
+  state.mapRotation += dx * 0.008;
+  state.lastMouse = { x: mx, y: my };
+  drawMap();
+});
+mapCanvas.addEventListener('click', e => {
+  if (state.isDragging) return; // ignore pure drag
+  const rect = mapCanvas.getBoundingClientRect();
+  const scaleX = mapCanvas.width / rect.width;
+  const scaleY = mapCanvas.height / rect.height;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const my = (e.clientY - rect.top) * scaleY;
+  const cx = mapCanvas.width/2, cy = mapCanvas.height/2, R = mapCanvas.width*0.46;
+  const dx = (mx - cx) / R;
+  const dy = (my - cy) / R;
+  const r = Math.sqrt(dx*dx + dy*dy);
+  if (r > 1.0) return;
+  state.landerR = r;
+  state.landerTheta = Math.atan2(dy, dx) - state.mapRotation;
+
+  // convert to approximate lat/lon (south pole stereographic-ish)
+  state.lat = -90 + r * 8;               // 0→-90°, edge ≈ -82°
+  state.lon = normalizeAz(rad2deg(state.landerTheta));
+  state.terrainHeight = terrainAt(r, state.landerTheta);
+  state.horizonMask = buildHorizonMask(r, state.landerTheta, state.terrainHeight);
+
+  updateClickInfo();
   update();
-}
+});
 
-function updateSiteMeta() {
-  const s = state.site;
-  $('site-meta').innerHTML = `
-    <div>Lat: ${s.lat.toFixed(2)}° · Lon: ${s.lon.toFixed(2)}°</div>
-    <div>Elev: ${s.elev} m</div>
-    <div class="text-slate-500 mt-1">${s.description}</div>
+function updateClickInfo() {
+  const h = state.terrainHeight;
+  const desc = h < -1.2 ? 'Deep crater floor' : h < -0.3 ? 'Crater / low area' : h > 0.8 ? 'High ridge / massif' : 'Rolling terrain';
+  $('click-info').innerHTML = `
+    <div>Lat: <span class="text-white">${state.lat.toFixed(2)}°</span> · Lon: <span class="text-white">${state.lon.toFixed(1)}°</span></div>
+    <div>Terrain: <span class="${h < -0.5 ? 'text-red-400' : 'text-green-400'}">${h.toFixed(2)} (${desc})</span></div>
+    <div class="text-slate-500">Deeper = higher rims → Sun & Earth blocked more often</div>
   `;
 }
 
-function renderCards() {
-  const container = $('site-cards');
-  container.innerHTML = SITES.map(s => `
-    <div class="site-card ${s.id === state.site.id ? 'active' : ''}" data-id="${s.id}">
-      <div class="font-semibold text-white text-sm">${s.name}</div>
-      <div class="text-xs font-mono text-slate-400 mt-1">${s.lat.toFixed(1)}°, ${s.lon.toFixed(1)}°</div>
-    </div>
-  `).join('');
-  container.querySelectorAll('.site-card').forEach(card => {
-    card.addEventListener('click', () => {
-      state.site = SITES.find(s => s.id === card.dataset.id);
-      $('site-select').value = state.site.id;
-      updateSiteMeta();
-      renderCards();
-      update();
-    });
-  });
-}
+/* ============================================================
+   HORIZON CANVAS
+   ============================================================ */
+const horCanvas = $('horizon-canvas');
+const horCtx = horCanvas.getContext('2d');
 
-function togglePlay() {
-  if (state.playing) stopPlay();
-  else startPlay();
-}
+function drawHorizon(sun, earth, sunChk, earthChk) {
+  const w = horCanvas.width, h = horCanvas.height;
+  horCtx.clearRect(0,0,w,h);
 
-function startPlay() {
-  state.playing = true;
-  $('btn-play').textContent = '⏸';
-  state.timer = setInterval(() => {
-    state.day += 0.05 * state.speed;
-    if (state.day > 28) state.day = 0;
-    $('timeline').value = state.day;
-    update();
-  }, 50);
-}
-
-function stopPlay() {
-  state.playing = false;
-  $('btn-play').textContent = '▶';
-  clearInterval(state.timer);
-}
-
-function update() {
-  const day = state.day;
-  $('day-label').textContent = `Day ${day.toFixed(1)} / 28`;
-
-  const sun = getSunPosition(day, state.site.lat);
-  const earth = getEarthPosition(day, state.site.lat, state.site.lon);
-  const sunCheck = isAboveHorizon(sun.az, sun.el, state.site.horizonMask);
-  const earthCheck = isAboveHorizon(earth.az, earth.el, state.site.horizonMask);
-
-  // Metrics
-  const powerPct = Math.max(0, Math.min(100, sunCheck.visible ? 70 + sunCheck.margin * 2 : Math.max(0, 20 + sunCheck.margin)));
-  const dtePct = Math.max(0, Math.min(100, earthCheck.visible ? 75 + earthCheck.margin * 1.5 : Math.max(0, 15 + earthCheck.margin)));
-
-  $('power-pct').textContent = Math.round(powerPct) + '%';
-  $('power-bar').style.width = powerPct + '%';
-  $('dte-pct').textContent = Math.round(dtePct) + '%';
-  $('dte-bar').style.width = dtePct + '%';
-
-  $('sun-detail').textContent = `Az: ${sun.az.toFixed(1)}° · El: ${sun.el.toFixed(1)}°`;
-  $('earth-detail').textContent = `Az: ${earth.az.toFixed(1)}° · El: ${earth.el.toFixed(1)}°`;
-
-  setStatus('power-status', powerPct);
-  setStatus('dte-status', dtePct);
-
-  $('sun-visible').textContent = sunCheck.visible ? 'YES' : 'NO';
-  $('sun-visible').className = sunCheck.visible ? 'text-green-400' : 'text-red-400';
-  $('earth-visible').textContent = earthCheck.visible ? 'YES' : 'NO';
-  $('earth-visible').className = earthCheck.visible ? 'text-green-400' : 'text-red-400';
-  $('sun-margin').textContent = sunCheck.margin.toFixed(1) + '°';
-  $('earth-margin').textContent = earthCheck.margin.toFixed(1) + '°';
-
-  drawHorizon(sun, earth, sunCheck, earthCheck);
-}
-
-function setStatus(id, pct) {
-  const el = $(id);
-  if (pct >= 70) { el.textContent = 'GOOD'; el.className = 'status-badge status-green'; }
-  else if (pct >= 30) { el.textContent = 'PARTIAL'; el.className = 'status-badge status-amber'; }
-  else { el.textContent = 'POOR'; el.className = 'status-badge status-red'; }
-}
-
-function drawHorizon(sun, earth, sunCheck, earthCheck) {
-  const w = canvas.width, h = canvas.height;
-  ctx.clearRect(0, 0, w, h);
-
-  // Background
-  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  // sky gradient
+  const grad = horCtx.createLinearGradient(0,0,0,h);
   grad.addColorStop(0, '#0B0F19');
-  grad.addColorStop(1, '#1E293B');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, w, h);
+  grad.addColorStop(0.55, '#111827');
+  grad.addColorStop(1, '#1e293b');
+  horCtx.fillStyle = grad;
+  horCtx.fillRect(0,0,w,h);
 
-  // Horizon line (0° elevation)
-  const horizonY = h * 0.55;
-  const maxEl = 40;
-  const scaleY = (horizonY - 20) / maxEl;
+  const horizonY = h * 0.58;
+  const maxEl = 35;
+  const scaleY = (horizonY - 25) / maxEl;
 
-  // Terrain mask
-  ctx.beginPath();
-  ctx.moveTo(0, h);
+  // terrain fill
+  horCtx.beginPath();
+  horCtx.moveTo(0, h);
   for (let i = 0; i <= 360; i++) {
     const x = (i / 360) * w;
-    const el = state.site.horizonMask[i % 360];
-    const y = horizonY - el * scaleY;
-    ctx.lineTo(x, y);
+    const el = state.horizonMask[i % 360];
+    horCtx.lineTo(x, horizonY - el * scaleY);
   }
-  ctx.lineTo(w, h);
-  ctx.closePath();
-  ctx.fillStyle = 'rgba(51,65,85,0.7)';
-  ctx.fill();
-  ctx.strokeStyle = '#64748b';
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
+  horCtx.lineTo(w, h);
+  horCtx.closePath();
+  horCtx.fillStyle = 'rgba(51,65,85,0.75)';
+  horCtx.fill();
+  horCtx.strokeStyle = '#64748b';
+  horCtx.lineWidth = 1.5;
+  horCtx.stroke();
 
-  // Grid lines
-  ctx.strokeStyle = 'rgba(100,116,139,0.25)';
-  ctx.lineWidth = 1;
+  // elevation grid
+  horCtx.strokeStyle = 'rgba(100,116,139,0.2)';
+  horCtx.lineWidth = 1;
   for (let el = 0; el <= 30; el += 10) {
     const y = horizonY - el * scaleY;
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+    horCtx.beginPath(); horCtx.moveTo(0,y); horCtx.lineTo(w,y); horCtx.stroke();
+    horCtx.fillStyle = '#64748b';
+    horCtx.font = '9px monospace';
+    horCtx.fillText(el + '°', 4, y - 3);
   }
 
-  // Cardinal labels
-  ctx.fillStyle = '#94a3b8';
-  ctx.font = '11px monospace';
-  ['N','E','S','W','N'].forEach((lab, i) => {
-    ctx.fillText(lab, (i / 4) * w - 4, h - 8);
+  // cardinal labels
+  horCtx.fillStyle = '#94a3b8';
+  horCtx.font = '11px monospace';
+  ['N','E','S','W','N'].forEach((lab,i) => {
+    horCtx.fillText(lab, (i/4)*w - 5, h - 6);
   });
 
-  // Sun vector
+  // SUN
   const sunX = (normalizeAz(sun.az) / 360) * w;
   const sunY = horizonY - sun.el * scaleY;
-  ctx.beginPath();
-  ctx.arc(sunX, sunY, 10, 0, Math.PI * 2);
-  ctx.fillStyle = sunCheck.visible ? '#FACC15' : '#854d0e';
-  ctx.fill();
-  ctx.shadowColor = sunCheck.visible ? '#FACC15' : 'transparent';
-  ctx.shadowBlur = 15;
-  ctx.fill();
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = '#FACC15';
-  ctx.font = '10px monospace';
-  ctx.fillText('☉ Sun', sunX + 14, sunY + 4);
+  horCtx.beginPath();
+  horCtx.arc(sunX, sunY, 11, 0, Math.PI*2);
+  horCtx.fillStyle = sunChk.visible ? '#FACC15' : '#713f12';
+  horCtx.shadowColor = sunChk.visible ? '#FACC15' : 'transparent';
+  horCtx.shadowBlur = sunChk.visible ? 18 : 0;
+  horCtx.fill();
+  horCtx.shadowBlur = 0;
+  horCtx.fillStyle = '#FACC15';
+  horCtx.font = '11px monospace';
+  horCtx.fillText('☉ SUN', sunX + 14, sunY + 4);
+  // ray to horizon
+  horCtx.strokeStyle = sunChk.visible ? 'rgba(250,204,21,0.45)' : 'rgba(250,204,21,0.12)';
+  horCtx.beginPath(); horCtx.moveTo(sunX, sunY); horCtx.lineTo(sunX, horizonY); horCtx.stroke();
 
-  // Earth vector
+  // EARTH
   const earthX = (normalizeAz(earth.az) / 360) * w;
   const earthY = horizonY - earth.el * scaleY;
-  ctx.beginPath();
-  ctx.arc(earthX, earthY, 8, 0, Math.PI * 2);
-  ctx.fillStyle = earthCheck.visible ? '#60A5FA' : '#1e3a5f';
-  ctx.fill();
-  ctx.shadowColor = earthCheck.visible ? '#60A5FA' : 'transparent';
-  ctx.shadowBlur = 12;
-  ctx.fill();
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = '#60A5FA';
-  ctx.fillText('⊕ Earth', earthX + 12, earthY + 4);
-
-  // Vertical markers
-  ctx.strokeStyle = sunCheck.visible ? 'rgba(250,204,21,0.4)' : 'rgba(250,204,21,0.15)';
-  ctx.beginPath(); ctx.moveTo(sunX, sunY); ctx.lineTo(sunX, horizonY); ctx.stroke();
-  ctx.strokeStyle = earthCheck.visible ? 'rgba(96,165,250,0.4)' : 'rgba(96,165,250,0.15)';
-  ctx.beginPath(); ctx.moveTo(earthX, earthY); ctx.lineTo(earthX, horizonY); ctx.stroke();
+  horCtx.beginPath();
+  horCtx.arc(earthX, earthY, 9, 0, Math.PI*2);
+  horCtx.fillStyle = earthChk.visible ? '#60A5FA' : '#1e3a5f';
+  horCtx.shadowColor = earthChk.visible ? '#60A5FA' : 'transparent';
+  horCtx.shadowBlur = earthChk.visible ? 14 : 0;
+  horCtx.fill();
+  horCtx.shadowBlur = 0;
+  horCtx.fillStyle = '#60A5FA';
+  horCtx.fillText('⊕ EARTH', earthX + 12, earthY + 4);
+  horCtx.strokeStyle = earthChk.visible ? 'rgba(96,165,250,0.45)' : 'rgba(96,165,250,0.12)';
+  horCtx.beginPath(); horCtx.moveTo(earthX, earthY); horCtx.lineTo(earthX, horizonY); horCtx.stroke();
 }
 
-function exportReport() {
-  const sun = getSunPosition(state.day, state.site.lat);
-  const earth = getEarthPosition(state.day, state.site.lat, state.site.lon);
-  const sunCheck = isAboveHorizon(sun.az, sun.el, state.site.horizonMask);
-  const earthCheck = isAboveHorizon(earth.az, earth.el, state.site.horizonMask);
+/* ============================================================
+   UPDATE LOOP
+   ============================================================ */
+function update() {
+  const day = state.day;
+  $('day-label').textContent = `Day ${day.toFixed(1)}`;
+  const phase = day % 28;
+  $('phase-label').textContent = (phase > 6 && phase < 22) ? 'Long daylight window' : 'Low / night period';
+  $('phase-label').className = 'text-xs font-mono ' + ((phase > 6 && phase < 22) ? 'text-amber-300' : 'text-slate-400');
 
+  const sun = getSun(day, state.lat);
+  const earth = getEarth(day, state.lon);
+  const sunChk = checkOcclusion(sun.az, sun.el, state.horizonMask);
+  const earthChk = checkOcclusion(earth.az, earth.el, state.horizonMask);
+
+  // power & DTE scores (also penalise deep craters)
+  const craterPenalty = state.terrainHeight < -1 ? 0.55 : state.terrainHeight < -0.3 ? 0.8 : 1;
+  let power = sunChk.visible ? 65 + sunChk.margin * 2.5 : Math.max(0, 12 + sunChk.margin);
+  let dte   = earthChk.visible ? 70 + earthChk.margin * 2 : Math.max(0, 10 + earthChk.margin);
+  power = clamp(power * craterPenalty, 0, 100);
+  dte   = clamp(dte * craterPenalty, 0, 100);
+
+  $('power-pct').textContent = Math.round(power) + '%';
+  $('power-bar').style.width = power + '%';
+  $('dte-pct').textContent = Math.round(dte) + '%';
+  $('dte-bar').style.width = dte + '%';
+
+  $('sun-detail').textContent = `Az ${sun.az.toFixed(1)}° · El ${sun.el.toFixed(1)}°`;
+  $('earth-detail').textContent = `Az ${earth.az.toFixed(1)}° · El ${earth.el.toFixed(1)}°`;
+
+  setBadge('power-status', power);
+  setBadge('dte-status', dte);
+
+  $('sun-visible').textContent = sunChk.visible ? 'YES' : 'NO';
+  $('sun-visible').className = 'font-semibold ' + (sunChk.visible ? 'text-green-400' : 'text-red-400');
+  $('earth-visible').textContent = earthChk.visible ? 'YES' : 'NO';
+  $('earth-visible').className = 'font-semibold ' + (earthChk.visible ? 'text-green-400' : 'text-red-400');
+  $('sun-margin').textContent = sunChk.margin.toFixed(1) + '°';
+  $('earth-margin').textContent = earthChk.margin.toFixed(1) + '°';
+
+  drawHorizon(sun, earth, sunChk, earthChk);
+  drawMap();
+}
+
+function setBadge(id, pct) {
+  const el = $(id);
+  if (pct >= 65) { el.textContent = 'GOOD'; el.className = 'status-badge status-green'; }
+  else if (pct >= 28) { el.textContent = 'PARTIAL'; el.className = 'status-badge status-amber'; }
+  else { el.textContent = 'NONE'; el.className = 'status-badge status-red'; }
+}
+
+/* ============================================================
+   CONTROLS
+   ============================================================ */
+$('timeline').addEventListener('input', e => {
+  state.day = parseFloat(e.target.value);
+  update();
+});
+
+function togglePlay() {
+  if (state.playing) {
+    clearInterval(state.timer);
+    state.playing = false;
+    $('btn-play').textContent = '▶';
+  } else {
+    state.playing = true;
+    $('btn-play').textContent = '⏸';
+    state.timer = setInterval(() => {
+      state.day += 0.06 * state.speed;
+      if (state.day > 28) state.day = 0;
+      $('timeline').value = state.day;
+      update();
+    }, 40);
+  }
+}
+$('btn-play').addEventListener('click', togglePlay);
+$('btn-ff').addEventListener('click', () => {
+  state.speed = state.speed === 1 ? 4 : 1;
+  $('btn-ff').style.color = state.speed === 4 ? '#60A5FA' : '';
+});
+$('btn-reset').addEventListener('click', () => {
+  state.day = 0;
+  $('timeline').value = 0;
+  if (state.playing) togglePlay();
+  update();
+});
+
+$('btn-export').addEventListener('click', () => {
+  const sun = getSun(state.day, state.lat);
+  const earth = getEarth(state.day, state.lon);
+  const sunChk = checkOcclusion(sun.az, sun.el, state.horizonMask);
+  const earthChk = checkOcclusion(earth.az, earth.el, state.horizonMask);
   const report = {
     generated: new Date().toISOString(),
     missionDay: +state.day.toFixed(2),
-    site: {
-      id: state.site.id,
-      name: state.site.name,
-      latitude: state.site.lat,
-      longitude: state.site.lon,
-      elevation_m: state.site.elev
+    lander: {
+      latitude: +state.lat.toFixed(3),
+      longitude: +state.lon.toFixed(2),
+      terrainHeight: +state.terrainHeight.toFixed(2)
     },
-    sun: { azimuth_deg: +sun.az.toFixed(2), elevation_deg: +sun.el.toFixed(2), visible: sunCheck.visible, margin_deg: +sunCheck.margin.toFixed(2) },
-    earth: { azimuth_deg: +earth.az.toFixed(2), elevation_deg: +earth.el.toFixed(2), visible: earthCheck.visible, margin_deg: +earthCheck.margin.toFixed(2) },
-    metrics: {
-      power_generation_pct: parseInt($('power-pct').textContent),
-      dte_comms_pct: parseInt($('dte-pct').textContent)
-    }
+    sun: { az: +sun.az.toFixed(1), el: +sun.el.toFixed(1), visible: sunChk.visible, margin: +sunChk.margin.toFixed(1) },
+    earth: { az: +earth.az.toFixed(1), el: +earth.el.toFixed(1), visible: earthChk.visible, margin: +earthChk.margin.toFixed(1) },
+    power_pct: parseInt($('power-pct').textContent),
+    dte_pct: parseInt($('dte-pct').textContent)
   };
-
-  const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify(report, null, 2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `clps-report-${state.site.id}-day${state.day.toFixed(1)}.json`;
+  a.download = `clps-lander-${state.lat.toFixed(1)}_${state.lon.toFixed(0)}-day${state.day.toFixed(1)}.json`;
   a.click();
-}
+});
 
-init();
+/* INIT */
+state.horizonMask = buildHorizonMask(state.landerR, state.landerTheta, state.terrainHeight);
+updateClickInfo();
+update();
 </script>
 </body>
 </html>
