@@ -11,10 +11,18 @@
         extend: {
           colors: {
             space: {
-              950: '#07090E', 900: '#0B0F19', 850: '#0F1520',
-              800: '#141B28', 700: '#1C2535', 600: '#2A3548'
+              950: '#07090E',
+              900: '#0B0F19',
+              850: '#0F1520',
+              800: '#141B28',
+              700: '#1C2535',
+              600: '#2A3548'
             },
-            cyan: { 400: '#22D3EE', 500: '#06B6D4', 600: '#0891B2' }
+            cyan: {
+              400: '#22D3EE',
+              500: '#06B6D4',
+              600: '#0891B2'
+            }
           },
           fontFamily: {
             sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -28,24 +36,90 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; }
-    body { background: #07090E; font-family: Inter, system-ui, sans-serif; overflow: hidden; height: 100vh; }
-    .panel { background: rgba(15, 21, 32, 0.92); border: 1px solid rgba(42, 53, 72, 0.7); }
-    .panel-header { border-bottom: 1px solid rgba(42, 53, 72, 0.6); }
-    .btn-primary { background: linear-gradient(135deg, #0891B2, #06B6D4); color: #fff; font-weight: 600; transition: all 0.15s; }
+    body {
+      background: #07090E;
+      font-family: Inter, system-ui, sans-serif;
+      overflow: hidden;
+      height: 100vh;
+    }
+    .panel {
+      background: rgba(15, 21, 32, 0.92);
+      border: 1px solid rgba(42, 53, 72, 0.7);
+    }
+    .panel-header {
+      border-bottom: 1px solid rgba(42, 53, 72, 0.6);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #0891B2, #06B6D4);
+      color: #fff;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
     .btn-primary:hover { filter: brightness(1.1); box-shadow: 0 0 16px rgba(6,182,212,0.35); }
-    .btn-ghost { background: rgba(28, 37, 53, 0.8); border: 1px solid rgba(42, 53, 72, 0.8); color: #94a3b8; transition: all 0.15s; }
-    .btn-ghost:hover, .btn-ghost.active { background: rgba(6, 182, 212, 0.15); border-color: #06B6D4; color: #22D3EE; }
-    .status-pill { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.04em; padding: 0.15rem 0.5rem; border-radius: 9999px; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; }
+    .btn-ghost {
+      background: rgba(28, 37, 53, 0.8);
+      border: 1px solid rgba(42, 53, 72, 0.8);
+      color: #94a3b8;
+      transition: all 0.15s;
+    }
+    .btn-ghost:hover, .btn-ghost.active {
+      background: rgba(6, 182, 212, 0.15);
+      border-color: #06B6D4;
+      color: #22D3EE;
+    }
+    .status-pill {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      padding: 0.15rem 0.5rem;
+      border-radius: 9999px;
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+    }
     .status-good { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.35); }
     .status-partial { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.35); }
     .status-none { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.35); }
-    input[type=range] { -webkit-appearance: none; height: 6px; border-radius: 9999px; background: #1C2535; }
-    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #22D3EE; cursor: pointer; box-shadow: 0 0 10px rgba(34,211,238,0.5); }
-    input[type=number] { background: #0F1520; border: 1px solid #2A3548; color: #e2e8f0; border-radius: 0.5rem; padding: 0.45rem 0.65rem; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; width: 100%; }
-    input[type=number]:focus { outline: none; border-color: #06B6D4; box-shadow: 0 0 0 2px rgba(6,182,212,0.2); }
-    .site-item { padding: 0.6rem 0.75rem; border-radius: 0.5rem; cursor: pointer; border: 1px solid transparent; transition: all 0.15s; }
+    input[type=range] {
+      -webkit-appearance: none;
+      height: 6px;
+      border-radius: 9999px;
+      background: #1C2535;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: #22D3EE;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(34,211,238,0.5);
+    }
+    input[type=number] {
+      background: #0F1520;
+      border: 1px solid #2A3548;
+      color: #e2e8f0;
+      border-radius: 0.5rem;
+      padding: 0.45rem 0.65rem;
+      font-size: 0.8rem;
+      font-family: 'JetBrains Mono', monospace;
+      width: 100%;
+    }
+    input[type=number]:focus {
+      outline: none;
+      border-color: #06B6D4;
+      box-shadow: 0 0 0 2px rgba(6,182,212,0.2);
+    }
+    .site-item {
+      padding: 0.6rem 0.75rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+    }
     .site-item:hover { background: rgba(28,37,53,0.8); border-color: #2A3548; }
-    .site-item.active { background: rgba(6,182,212,0.12); border-color: rgba(6,182,212,0.45); }
+    .site-item.active {
+      background: rgba(6,182,212,0.12);
+      border-color: rgba(6,182,212,0.45);
+    }
     canvas { display: block; }
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-thumb { background: #2A3548; border-radius: 3px; }
@@ -53,7 +127,6 @@
 </head>
 <body class="text-slate-200 h-screen flex flex-col">
 
-  <!-- TOP BAR -->
   <header class="panel flex items-center justify-between px-4 py-2.5 shrink-0 z-20">
     <div class="flex items-center gap-3">
       <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-cyan-500/20">☾</div>
@@ -72,7 +145,6 @@
 
   <div class="flex-1 flex min-h-0">
 
-    <!-- LEFT SIDEBAR -->
     <aside class="w-64 xl:w-72 panel flex flex-col shrink-0 border-r border-space-600/50">
       <div class="panel-header px-3 py-2 flex gap-1 text-xs font-medium">
         <button class="btn-ghost flex-1 py-1.5 rounded-md active" data-tab="sites">Sites</button>
@@ -87,7 +159,7 @@
         <div class="space-y-3">
           <div>
             <label class="text-[10px] text-slate-500 block mb-1">Lat (°N/S)</label>
-            <input type="number" id="input-lat" step="0.1" value="-89.5" />
+            <input type="number" id="input-lat" step="0.1" value="-89.9" />
           </div>
           <div>
             <label class="text-[10px] text-slate-500 block mb-1">Lon (°E/W)</label>
@@ -107,7 +179,6 @@
       </div>
     </aside>
 
-    <!-- CENTER -->
     <main class="flex-1 flex flex-col min-w-0 bg-space-950">
       <div id="panel-map" class="flex-1 flex flex-col min-h-0 p-3">
         <div class="flex items-center justify-between mb-2 px-1">
@@ -137,7 +208,6 @@
       </div>
     </main>
 
-    <!-- RIGHT -->
     <aside class="w-72 xl:w-80 panel flex flex-col shrink-0 border-l border-space-600/50 overflow-y-auto">
       <div class="panel-header px-4 py-2.5">
         <h2 class="text-xs font-semibold uppercase tracking-wider text-cyan-400 flex items-center gap-2"><span>◈</span> Feasibility Metrics</h2>
@@ -187,7 +257,6 @@
     </aside>
   </div>
 
-  <!-- BOTTOM TIMELINE -->
   <footer class="panel border-t border-space-600/50 px-4 py-2.5 flex items-center gap-4 shrink-0">
     <div class="flex items-center gap-2">
       <button id="btn-play" class="w-9 h-9 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 flex items-center justify-center hover:bg-cyan-500/30 transition">▶</button>
@@ -195,14 +264,14 @@
       <button id="btn-reset" class="btn-ghost w-8 h-8 rounded-md text-sm">↺</button>
     </div>
     <div class="flex-1 min-w-0">
-      <input type="range" id="timeline" min="0" max="28" step="0.05" value="0" class="w-full" />
+      <input type="range" id="timeline" min="0" max="28" step="0.05" value="21" class="w-full" />
       <div class="flex justify-between text-[9px] font-mono text-slate-600 mt-0.5">
         <span>Day 0</span><span>+7d</span><span>+14d</span><span>+21d</span><span>+28d</span>
       </div>
     </div>
     <div class="text-right shrink-0 w-28">
-      <p id="day-label" class="text-sm font-mono font-semibold text-white">Day 0.0</p>
-      <p id="phase-label" class="text-[10px] font-mono text-slate-500">Low / night</p>
+      <p id="day-label" class="text-sm font-mono font-semibold text-white">Day 21.0</p>
+      <p id="phase-label" class="text-[10px] font-mono text-slate-500">Sun above horizon</p>
     </div>
   </footer>
 
@@ -216,12 +285,13 @@ const PRESETS = [
 ];
 
 const state = {
-  day: 0, playing: false, speed: 1, timer: null,
-  landerR: 0.35, landerTheta: 0.4, mapRotation: 0,
+  day: 21, playing: false, speed: 1, timer: null,
+  landerR: 0.12, landerTheta: 0.0, mapRotation: 0,
   isDragging: false, didDrag: false, lastMouse: null,
-  lat: -89.5, lon: 0, terrainHeight: 0,
-  horizonMask: new Array(360).fill(8),
-  activePreset: null, view: 'map'
+  lat: -89.9, lon: 0, terrainHeight: 0.5,
+  horizonMask: new Array(360).fill(0.5),
+  activePreset: 'shackleton',
+  view: 'map'
 };
 
 const $ = id => document.getElementById(id);
@@ -260,36 +330,60 @@ function buildHorizonMask(r, theta, localH) {
   const mask = [];
   for (let az = 0; az < 360; az++) {
     const rad = deg2rad(az);
-    let maxEl = 2;
-    for (let dist = 0.04; dist < 0.45; dist += 0.04) {
-      const nr = clamp(r + dist * Math.cos(rad + state.mapRotation), 0, 0.98);
-      const ntheta = theta + dist * Math.sin(rad + state.mapRotation) / Math.max(r, 0.05);
+    let maxEl = 0.15;
+    for (let dist = 0.04; dist < 0.35; dist += 0.04) {
+      const nr = clamp(r + dist * Math.cos(rad), 0, 0.98);
+      const ntheta = theta + (dist * Math.sin(rad)) / Math.max(r, 0.04);
       const h = terrainAt(nr, ntheta);
-      const elev = Math.atan2((h - localH) * 18, dist * 90) * 180 / Math.PI;
+      const elev = Math.atan2((h - localH) * 1.4, dist * 50) * (180 / Math.PI);
       if (elev > maxEl) maxEl = elev;
     }
-    maxEl = clamp(maxEl + (Math.random()-0.5)*1.2, 1, 32);
+    const ceiling = localH < -1.2 ? 5.5 : localH < -0.4 ? 3.0 : 1.6;
+    maxEl = clamp(maxEl + (Math.random() - 0.5) * 0.1, 0.05, ceiling);
     mask.push(maxEl);
   }
   return mask;
 }
-function getSun(day, lat) {
-  const phase = (day / 28) * Math.PI * 2;
-  const dec = -89.5 + 1.8 * Math.sin(phase);
-  const ha = phase * 180 / Math.PI;
-  const sinEl = Math.sin(deg2rad(lat)) * Math.sin(deg2rad(dec)) +
-                Math.cos(deg2rad(lat)) * Math.cos(deg2rad(dec)) * Math.cos(deg2rad(ha));
-  const el = rad2deg(Math.asin(clamp(sinEl, -1, 1)));
-  let az = Math.atan2(-Math.sin(deg2rad(ha)), Math.tan(deg2rad(dec)) * Math.cos(deg2rad(lat)) - Math.sin(deg2rad(lat)) * Math.cos(deg2rad(ha)));
-  return { az: normalizeAz(rad2deg(az)), el };
+
+function getSun(day, lat, lon) {
+  const subSolarLonDeg = ((day / 28) * 360) % 360;
+  const latRad = deg2rad(lat);
+  const lonRad = deg2rad(lon);
+  const subSolarLonRad = deg2rad(subSolarLonDeg);
+  const hourAngleSun = lonRad - subSolarLonRad;
+  const solarDeclination = 0.0268 * Math.sin(subSolarLonRad);
+  const sinSunAlt = Math.sin(latRad) * Math.sin(solarDeclination) +
+                    Math.cos(latRad) * Math.cos(solarDeclination) * Math.cos(hourAngleSun);
+  let el = rad2deg(Math.asin(clamp(sinSunAlt, -1, 1)));
+  el += (state.terrainHeight || 0) * 0.35;
+  const ySun = Math.sin(hourAngleSun);
+  const xSun = Math.cos(hourAngleSun) * Math.sin(latRad) - Math.tan(solarDeclination) * Math.cos(latRad);
+  let az = rad2deg(Math.atan2(ySun, xSun));
+  if (az < 0) az += 360;
+  return { az, el };
 }
-function getEarth(day, lon) {
-  const phase = day / 28 * Math.PI * 2 * 0.15;
-  return { az: normalizeAz(175 + lon * 0.4 + 12 * Math.cos(phase)), el: 4 + 9 * Math.sin(phase + lon * 0.008) };
+
+function getEarth(day, lat, lon) {
+  const phase = (day / 28) * Math.PI * 2 * (29.5 / 27.3);
+  const subEarthLatRad = 0.11 * Math.sin(phase);
+  const subEarthLonRad = 0.13 * Math.cos(phase);
+  const latRad = deg2rad(lat);
+  const lonRad = deg2rad(lon);
+  const hourAngleEarth = lonRad - subEarthLonRad;
+  const sinEarthAlt = Math.sin(latRad) * Math.sin(subEarthLatRad) +
+                      Math.cos(latRad) * Math.cos(subEarthLatRad) * Math.cos(hourAngleEarth);
+  let el = rad2deg(Math.asin(clamp(sinEarthAlt, -1, 1)));
+  el += (state.terrainHeight || 0) * 0.45;
+  const yEarth = Math.sin(hourAngleEarth);
+  const xEarth = Math.cos(hourAngleEarth) * Math.sin(latRad) - Math.tan(subEarthLatRad) * Math.cos(latRad);
+  let az = rad2deg(Math.atan2(yEarth, xEarth));
+  if (az < 0) az += 360;
+  return { az, el };
 }
+
 function checkOcclusion(az, el, mask) {
   const idx = Math.floor(normalizeAz(az)) % 360;
-  const rim = mask[idx] || 5;
+  const rim = mask[idx] || 0.5;
   return { visible: el > rim, margin: el - rim, rim };
 }
 
@@ -334,7 +428,7 @@ function drawMap() {
   mapCtx.fillStyle = '#86efac'; mapCtx.font = '11px JetBrains Mono, monospace';
   mapCtx.fillText('LANDER', lx + 12, ly + 4);
 
-  const sun = getSun(state.day, state.lat);
+  const sun = getSun(state.day, state.lat, state.lon);
   const sunAng = deg2rad(sun.az) + state.mapRotation;
   const sunX = cx + Math.cos(sunAng) * R * 0.92, sunY = cy + Math.sin(sunAng) * R * 0.92;
   mapCtx.strokeStyle = 'rgba(250,204,21,0.65)'; mapCtx.lineWidth = 2.5; mapCtx.setLineDash([5,4]);
@@ -344,7 +438,7 @@ function drawMap() {
   mapCtx.fillStyle = '#FACC15'; mapCtx.font = 'bold 12px JetBrains Mono, monospace';
   mapCtx.fillText('☉ SUN', sunX + 14, sunY + 4);
 
-  const earth = getEarth(state.day, state.lon);
+  const earth = getEarth(state.day, state.lat, state.lon);
   const earthAng = deg2rad(earth.az) + state.mapRotation;
   const earthX = cx + Math.cos(earthAng) * R * 0.78, earthY = cy + Math.sin(earthAng) * R * 0.78;
   mapCtx.strokeStyle = 'rgba(34,211,238,0.65)'; mapCtx.lineWidth = 2.5; mapCtx.setLineDash([5,4]);
@@ -425,14 +519,14 @@ function drawHorizon(sun, earth, sunChk, earthChk) {
   const grad = horCtx.createLinearGradient(0,0,0,h);
   grad.addColorStop(0, '#07090E'); grad.addColorStop(0.55, '#0F1520'); grad.addColorStop(1, '#141B28');
   horCtx.fillStyle = grad; horCtx.fillRect(0,0,w,h);
-  const horizonY = h * 0.58, scaleY = (horizonY - 25) / 35;
+  const horizonY = h * 0.62, maxEl = 15, scaleY = (horizonY - 30) / maxEl;
   horCtx.beginPath(); horCtx.moveTo(0, h);
   for (let i = 0; i <= 360; i++) horCtx.lineTo((i/360)*w, horizonY - state.horizonMask[i%360]*scaleY);
   horCtx.lineTo(w, h); horCtx.closePath();
   horCtx.fillStyle = 'rgba(28,37,53,0.85)'; horCtx.fill();
   horCtx.strokeStyle = '#2A3548'; horCtx.lineWidth = 1.5; horCtx.stroke();
   horCtx.strokeStyle = 'rgba(42,53,72,0.4)'; horCtx.lineWidth = 1;
-  for (let el = 0; el <= 30; el += 10) {
+  for (let el = 0; el <= 12; el += 3) {
     const y = horizonY - el * scaleY;
     horCtx.beginPath(); horCtx.moveTo(0,y); horCtx.lineTo(w,y); horCtx.stroke();
     horCtx.fillStyle = '#64748b'; horCtx.font = '9px JetBrains Mono, monospace';
@@ -465,29 +559,42 @@ function drawHorizon(sun, earth, sunChk, earthChk) {
 function update() {
   const day = state.day;
   $('day-label').textContent = `Day ${day.toFixed(1)}`;
-  const phase = day % 28;
-  const isDay = phase > 6 && phase < 22;
-  $('phase-label').textContent = isDay ? 'Daylight window' : 'Low / night period';
-  $('phase-label').className = 'text-[10px] font-mono ' + (isDay ? 'text-amber-300' : 'text-slate-500');
 
-  const sun = getSun(day, state.lat);
-  const earth = getEarth(day, state.lon);
+  const sun = getSun(day, state.lat, state.lon);
+  const earth = getEarth(day, state.lat, state.lon);
   const sunChk = checkOcclusion(sun.az, sun.el, state.horizonMask);
   const earthChk = checkOcclusion(earth.az, earth.el, state.horizonMask);
 
-  const craterPenalty = state.terrainHeight < -1 ? 0.55 : state.terrainHeight < -0.3 ? 0.8 : 1;
-  let power = sunChk.visible ? 65 + sunChk.margin * 2.5 : Math.max(0, 12 + sunChk.margin);
-  let dte = earthChk.visible ? 70 + earthChk.margin * 2 : Math.max(0, 10 + earthChk.margin);
-  power = clamp(power * craterPenalty, 0, 100);
-  dte = clamp(dte * craterPenalty, 0, 100);
+  const isDay = sun.el > 0.3;
+  $('phase-label').textContent = isDay ? 'Sun above horizon' : 'Sun below horizon';
+  $('phase-label').className = 'text-[10px] font-mono ' + (isDay ? 'text-amber-300' : 'text-slate-500');
 
-  $('power-pct').textContent = Math.round(power) + '%';
+  let power = 0;
+  if (sunChk.visible && sun.el > -0.2) {
+    if (state.terrainHeight < -1.0) {
+      power = clamp(sun.el * 8 + sunChk.margin * 5, 0, 25);
+    } else {
+      power = clamp(55 + sun.el * 18 + sunChk.margin * 12, 20, 100);
+    }
+  }
+  power = Math.round(clamp(power, 0, 100));
+
+  let dte = 0;
+  if (earthChk.visible && earth.el > 0.5) {
+    dte = Math.min(100, Math.max(20, 55 + earth.el * 6 + earthChk.margin * 4));
+  } else if (earth.el > -1) {
+    dte = Math.max(0, 10 + earth.el * 3);
+  }
+  dte = Math.round(clamp(dte, 0, 100));
+
+  $('power-pct').textContent = power + '%';
   $('power-bar').style.width = power + '%';
-  $('dte-pct').textContent = Math.round(dte) + '%';
+  $('dte-pct').textContent = dte + '%';
   $('dte-bar').style.width = dte + '%';
-  $('sun-detail').textContent = `Az ${sun.az.toFixed(1)}° · El ${sun.el.toFixed(1)}°`;
-  $('earth-detail').textContent = `Az ${earth.az.toFixed(1)}° · El ${earth.el.toFixed(1)}°`;
-  setBadge('power-status', power); setBadge('dte-status', dte);
+  $('sun-detail').textContent = `Az ${sun.az.toFixed(1)}° · El ${sun.el >= 0 ? '+' : ''}${sun.el.toFixed(1)}°`;
+  $('earth-detail').textContent = `Az ${earth.az.toFixed(1)}° · El ${earth.el >= 0 ? '+' : ''}${earth.el.toFixed(1)}°`;
+  setBadge('power-status', power);
+  setBadge('dte-status', dte);
   $('sun-visible').textContent = sunChk.visible ? 'YES' : 'NO';
   $('sun-visible').className = sunChk.visible ? 'text-green-400' : 'text-red-400';
   $('earth-visible').textContent = earthChk.visible ? 'YES' : 'NO';
@@ -558,13 +665,16 @@ $('btn-jump').addEventListener('click', () => {
 $('timeline').addEventListener('input', e => { state.day = parseFloat(e.target.value); update(); });
 
 function togglePlay() {
-  if (state.playing) { clearInterval(state.timer); state.playing = false; $('btn-play').textContent = '▶'; }
-  else {
+  if (state.playing) {
+    clearInterval(state.timer); state.playing = false;
+    $('btn-play').textContent = '▶';
+  } else {
     state.playing = true; $('btn-play').textContent = '⏸';
     state.timer = setInterval(() => {
       state.day += 0.06 * state.speed;
       if (state.day > 28) state.day = 0;
-      $('timeline').value = state.day; update();
+      $('timeline').value = state.day;
+      update();
     }, 40);
   }
 }
@@ -575,12 +685,13 @@ $('btn-ff').addEventListener('click', () => {
 });
 $('btn-reset').addEventListener('click', () => {
   state.day = 0; $('timeline').value = 0;
-  if (state.playing) togglePlay(); update();
+  if (state.playing) togglePlay();
+  update();
 });
 
 $('btn-export').addEventListener('click', () => {
-  const sun = getSun(state.day, state.lat);
-  const earth = getEarth(state.day, state.lon);
+  const sun = getSun(state.day, state.lat, state.lon);
+  const earth = getEarth(state.day, state.lat, state.lon);
   const sunChk = checkOcclusion(sun.az, sun.el, state.horizonMask);
   const earthChk = checkOcclusion(earth.az, earth.el, state.horizonMask);
   const report = {
@@ -603,6 +714,16 @@ renderSiteList();
 state.horizonMask = buildHorizonMask(state.landerR, state.landerTheta, state.terrainHeight);
 updateClickInfo();
 update();
+
+function resizeMap() {
+  const wrap = mapCanvas.parentElement;
+  if (!wrap) return;
+  const size = Math.min(wrap.clientWidth, wrap.clientHeight);
+  mapCanvas.style.width = size + 'px';
+  mapCanvas.style.height = size + 'px';
+}
+window.addEventListener('resize', resizeMap);
+setTimeout(resizeMap, 50);
 </script>
 </body>
 </html>
