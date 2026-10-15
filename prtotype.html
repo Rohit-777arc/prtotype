@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>CLPS Lunar Mission Browser | Artemis South Pole</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+// Fallback: minimal orbit if OrbitControls fails to load
+window.addEventListener('load', function() {
+  if (typeof THREE !== 'undefined' && typeof THREE.OrbitControls !== 'function') {
+    console.warn('OrbitControls missing — drag will be limited');
+  }
+});
+</script>
+<script>
+tailwind.config={theme:{extend:{colors:{space:{950:'#07090E',900:'#0B0F19',850:'#0F1520',800:'#141B28',700:'#1C2535',600:'#2A3548'},cyan:{400:'#22D3EE',500:'#06B6D4'}}}}}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#07090E;font-family:Inter,system-ui,sans-serif;overflow:hidden;height:100vh;color:#e2e8f0}
+.panel{background:rgba(15,21,32,.92);border:1px solid rgba(42,53,72,.7)}
+.btn-ghost{background:rgba(28,37,53,.8);border:1px solid rgba(42,53,72,.8);color:#94a3b8;transition:.15s}
+.btn-ghost:hover,.btn-ghost.active{background:rgba(6,182,212,.15);border-color:#06B6D4;color:#22D3EE}
+.btn-primary{background:linear-gradient(135deg,#0891B2,#06B6D4);color:#fff;font-weight:600}
+.status-pill{font-size:.65rem;font-weight:600;padding:.15rem .5rem;border-radius:9999px;font-family:JetBrains Mono,monospace;text-transform:uppercase}
+.status-good{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.35)}
+.status-partial{background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.35)}
+.status-none{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.35)}
+.site-item{padding:.55rem .7rem;border-radius:.5rem;cursor:pointer;border:1px solid transparent;transition:.15s}
+.site-item:hover{background:rgba(28,37,53,.8);border-color:#2A3548}
+.site-item.active{background:rgba(6,182,212,.12);border-color:rgba(6,182,212,.45)}
+input[type=range]{-webkit-appearance:none;height:6px;border-radius:9999px;background:#1C2535;width:100%}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#22D3EE;cursor:pointer;box-shadow:0 0 10px rgba(34,211,238,.5)}
+input[type=number]{background:#0F1520;border:1px solid #2A3548;color:#e2e8f0;border-radius:.5rem;padding:.4rem .6rem;font-size:.8rem;font-family:JetBrains Mono,monospace;width:100%}
+#globe-canvas{display:block;width:100%;height:100%}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#2A3548;border-radius:3px}
+</style>
+</head>
+<body class="h-screen flex flex-col">
+
+<header class="panel flex items-center justify-between px-4 py-2.5 shrink-0 z-20">
+  <div class="flex items-center gap-3">
+    <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-lg">☾</div>
+    <div>
+      <h1 class="text-sm font-bold tracking-wide text-white leading-tight">CLPS LUNAR MISSION BROWSER</h1>
+      <p class="text-[10px] text-slate-500 font-mono">Artemis III Candidate Regions · LRO/LOLA inspired</p>
+    </div>
+  </div>
+  <div class="flex items-center gap-1.5 text-xs">
+    <span class="text-[10px] text-slate-500 uppercase mr-1 hidden sm:inline">Camera</span>
+    <button class="btn-ghost px-2.5 py-1.5 rounded-md" data-cam="system">System</button>
+    <button class="btn-ghost px-2.5 py-1.5 rounded-md" data-cam="earth">Earth</button>
+    <button class="btn-ghost px-2.5 py-1.5 rounded-md" data-cam="moon">Moon</button>
+    <button class="btn-ghost px-2.5 py-1.5 rounded-md active" data-cam="southpole">South Pole</button>
+    <button id="btn-export" class="btn-primary text-xs px-3 py-1.5 rounded-md ml-2">Export</button>
+  </div>
+</header>
+
+<div class="flex-1 flex min-h-0">
+  <!-- LEFT -->
+  <aside class="w-64 xl:w-72 panel flex flex-col shrink-0 border-r border-space-600/50">
+    <div class="px-3 py-2 border-b border-space-600/50 flex gap-1 text-xs">
+      <button class="btn-ghost flex-1 py-1.5 rounded-md active" data-tab="sites">Sites</button>
+      <button class="btn-ghost flex-1 py-1.5 rounded-md" data-tab="coords">Custom</button>
+    </div>
+    <div id="tab-sites" class="flex-1 overflow-y-auto p-2 space-y-0.5">
+      <p class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1.5 px-1">NASA Artemis III Regions (13)</p>
+      <div id="site-list"></div>
+    </div>
+    <div id="tab-coords" class="flex-1 overflow-y-auto p-3 hidden">
+      <p class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-2">Custom Landing Pin</p>
+      <div class="space-y-2">
+        <div><label class="text-[10px] text-slate-500">Lat</label><input type="number" id="input-lat" step="0.01" value="-89.53"/></div>
+        <div><label class="text-[10px] text-slate-500">Lon</label><input type="number" id="input-lon" step="0.01" value="-137"/></div>
+        <button id="btn-jump" class="btn-primary w-full py-2 rounded-lg text-sm">Jump & Analyze</button>
+      </div>
+      <p class="mt-3 text-[10px] text-slate-500 font-mono">Coords based on LRO/LOLA literature centers for each region.</p>
+    </div>
+    <div class="p-2.5 border-t border-space-600/50 text-[10px] font-mono text-slate-500" id="click-info">
+      <div>Lat — · Lon —</div>
+      <div class="text-slate-600 mt-0.5">Select a NASA region</div>
+    </div>
+  </aside>
+
+  <!-- CENTER 3D -->
+  <main class="flex-1 relative min-w-0 bg-space-950">
+    <canvas id="globe-canvas"></canvas>
+    <div class="absolute top-2 left-2 right-2 flex justify-between pointer-events-none">
+      <div class="text-[10px] font-mono text-slate-400 bg-black/40 px-2 py-1 rounded">Drag to orbit · Scroll zoom</div>
+      <div class="text-[10px] font-mono text-slate-400 bg-black/40 px-2 py-1 rounded flex gap-3">
+        <span class="text-yellow-400">● Sun</span>
+        <span class="text-blue-400">● Earth</span>
+        <span class="text-green-400">● Sites</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- RIGHT -->
+  <aside class="w-72 xl:w-80 panel flex flex-col shrink-0 border-l border-space-600/50 overflow-y-auto">
+    <div class="px-4 py-2.5 border-b border-space-600/50">
+      <h2 class="text-xs font-semibold uppercase tracking-wider text-cyan-400">◈ Feasibility Metrics</h2>
+    </div>
+    <div class="p-3 space-y-3">
+      <div class="rounded-xl border border-space-600/50 bg-space-850/80 p-3.5">
+        <div class="flex justify-between mb-1.5">
+          <span class="text-[10px] uppercase text-slate-400 font-semibold">Sunlight / Power</span>
+          <span id="power-status" class="status-pill status-partial">—</span>
+        </div>
+        <div class="flex items-baseline gap-1">
+          <span id="power-pct" class="text-2xl font-bold font-mono text-white">0%</span>
+          <span class="text-xs text-slate-500">availability</span>
+        </div>
+        <div class="w-full h-1.5 bg-space-700 rounded-full mt-1.5 overflow-hidden">
+          <div id="power-bar" class="h-full bg-gradient-to-r from-amber-500 to-yellow-400 transition-all" style="width:0%"></div>
+        </div>
+        <p id="sun-detail" class="mt-1.5 text-[10px] font-mono text-slate-500">Az — · El —</p>
+      </div>
+      <div class="rounded-xl border border-space-600/50 bg-space-850/80 p-3.5">
+        <div class="flex justify-between mb-1.5">
+          <span class="text-[10px] uppercase text-slate-400 font-semibold">Direct-to-Earth</span>
+          <span id="dte-status" class="status-pill status-partial">—</span>
+        </div>
+        <div class="flex items-baseline gap-1">
+          <span id="dte-pct" class="text-2xl font-bold font-mono text-white">0%</span>
+          <span class="text-xs text-slate-500">uptime</span>
+        </div>
+        <div class="w-full h-1.5 bg-space-700 rounded-full mt-1.5 overflow-hidden">
+          <div id="dte-bar" class="h-full bg-gradient-to-r from-cyan-500 to-blue-400 transition-all" style="width:0%"></div>
+        </div>
+        <p id="earth-detail" class="mt-1.5 text-[10px] font-mono text-slate-500">Az — · El —</p>
+      </div>
+      <div class="rounded-xl border border-space-600/50 bg-space-850/80 p-3.5">
+        <p class="text-[10px] uppercase text-slate-400 font-semibold mb-2">Vector Status</p>
+        <div class="space-y-1.5 text-xs font-mono">
+          <div class="flex justify-between"><span class="text-slate-500">Sun above rim</span><span id="sun-visible">—</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Earth above rim</span><span id="earth-visible">—</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Sun margin</span><span id="sun-margin" class="text-slate-300">—°</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Earth margin</span><span id="earth-margin" class="text-slate-300">—°</span></div>
+        </div>
+      </div>
+      <div id="site-desc" class="rounded-lg border border-cyan-500/20 bg-cyan-500/5 p-3 text-[11px] text-slate-400 leading-relaxed">
+        Select a NASA Artemis III candidate region.
+      </div>
+      <div class="text-[10px] text-slate-600 font-mono leading-relaxed">
+        Site centers approximate published LRO/LOLA-based literature points within each ~15–25 km NASA region.
+      </div>
+    </div>
+  </aside>
+</div>
+
+<footer class="panel border-t border-space-600/50 px-4 py-2 flex items-center gap-3 shrink-0">
+  <div class="flex items-center gap-1.5">
+    <button id="btn-play" class="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 flex items-center justify-center text-sm">▶</button>
+    <button id="btn-ff" class="btn-ghost w-7 h-7 rounded-md text-xs">⏩</button>
+    <button id="btn-reset" class="btn-ghost w-7 h-7 rounded-md text-xs">↺</button>
+  </div>
+  <div class="flex-1 min-w-0">
+    <input type="range" id="timeline" min="0" max="28" step="0.05" value="21"/>
+    <div class="flex justify-between text-[9px] font-mono text-slate-600 mt-0.5"><span>0d</span><span>7d</span><span>14d</span><span>21d</span><span>28d</span></div>
+  </div>
+  <div class="text-right shrink-0 w-24">
+    <p id="day-label" class="text-sm font-mono font-semibold text-white">Day 21.0</p>
+    <p id="phase-label" class="text-[10px] font-mono text-amber-300">Sun above horizon</p>
+  </div>
+</footer>
+
+<script>
+/* ===== NASA Artemis III candidate regions (representative LRO/LOLA literature centers) ===== */
+const PRESETS = [
+  { id:'fra', name:'Faustini Rim A', lat:-88.05, lon:89.8, note:'Rim of Faustini crater; large PSR access, seasonal illumination (LRO).' },
+  { id:'pns', name:'Peak Near Shackleton', lat:-89.02, lon:126.3, note:'Elevated terrain near Shackleton; high illum. + nearby ice PSRs (LRO).' },
+  { id:'cr', name:'Connecting Ridge', lat:-89.53, lon:-137.0, note:'Shackleton–de Gerlache ridge; near-permanent illumination candidate (LRO/LOLA).' },
+  { id:'cre', name:'Connecting Ridge Extension', lat:-89.01, lon:-107.0, note:'Northern ridge extension; mixed lighting windows (LRO).' },
+  { id:'dgr1', name:'de Gerlache Rim 1', lat:-88.51, lon:-68.0, note:'Eastern de Gerlache rim; PSR access + ridge light (LRO).' },
+  { id:'dgr2', name:'de Gerlache Rim 2', lat:-88.39, lon:-68.9, note:'de Gerlache rim segment; illum./DTE tradeoffs (LRO).' },
+  { id:'dgkm', name:'de Gerlache-Kocher Massif', lat:-85.73, lon:-116.8, note:'Far-side massif (Mons Kocher); SP-Aitken science (LRO).' },
+  { id:'haw', name:'Haworth', lat:-86.90, lon:-24.3, note:'Haworth crater region; multiple PSRs (LRO/LOLA).' },
+  { id:'mal', name:'Malapert Massif', lat:-85.99, lon:0.0, note:'High massif; strong Earth view & extended sunlight (LRO).' },
+  { id:'lbp', name:'Leibnitz Beta Plateau', lat:-85.40, lon:32.0, note:'Elevated plateau; good DTE & geology (LRO).' },
+  { id:'nr1', name:'Nobile Rim 1', lat:-85.40, lon:45.0, note:'Nobile crater rim; ice science, variable light (LRO).' },
+  { id:'nr2', name:'Nobile Rim 2', lat:-84.20, lon:60.70, note:'Strong combined illum., DTE, PSR access in studies (LRO).' },
+  { id:'amr', name:'Amundsen Rim', lat:-84.30, lon:68.5, note:'Amundsen crater rim; large accessible area (LRO).' }
+];
+
+const state = {
+  day:21, playing:false, speed:1, timer:null,
+  lat:-89.53, lon:-137, terrainHeight:0.4,
+  horizonMask:new Array(360).fill(0.4),
+  activePreset:'cr', siteName:'Connecting Ridge'
+};
+
+const $ = id => document.getElementById(id);
+function deg2rad(d){return d*Math.PI/180}
+function rad2deg(r){return r*180/Math.PI}
+function normalizeAz(az){return ((az%360)+360)%360}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+
+/* Celestial math (south pole) */
+function getSun(day,lat,lon){
+  const subSolarLonDeg=((day/28)*360)%360;
+  const latRad=deg2rad(lat), lonRad=deg2rad(lon), sub=deg2rad(subSolarLonDeg);
+  const ha=lonRad-sub;
+  const dec=0.0268*Math.sin(sub);
+  const sinEl=Math.sin(latRad)*Math.sin(dec)+Math.cos(latRad)*Math.cos(dec)*Math.cos(ha);
+  let el=rad2deg(Math.asin(clamp(sinEl,-1,1)));
+  el+=(state.terrainHeight||0)*0.35;
+  const y=Math.sin(ha), x=Math.cos(ha)*Math.sin(latRad)-Math.tan(dec)*Math.cos(latRad);
+  let az=rad2deg(Math.atan2(y,x)); if(az<0)az+=360;
+  return {az,el};
+}
+function getEarth(day,lat,lon){
+  const phase=(day/28)*Math.PI*2*(29.5/27.3);
+  const seLat=0.11*Math.sin(phase), seLon=0.13*Math.cos(phase);
+  const latRad=deg2rad(lat), lonRad=deg2rad(lon), ha=lonRad-seLon;
+  const sinEl=Math.sin(latRad)*Math.sin(seLat)+Math.cos(latRad)*Math.cos(seLat)*Math.cos(ha);
+  let el=rad2deg(Math.asin(clamp(sinEl,-1,1)));
+  el+=(state.terrainHeight||0)*0.45;
+  const y=Math.sin(ha), x=Math.cos(ha)*Math.sin(latRad)-Math.tan(seLat)*Math.cos(latRad);
+  let az=rad2deg(Math.atan2(y,x)); if(az<0)az+=360;
+  return {az,el};
+}
+function rimAt(az){
+  // simple procedural rim: lower on ridges, higher near "crater-like" random variation
+  const i=Math.floor(normalizeAz(az))%360;
+  return state.horizonMask[i]||0.4;
+}
+function checkOcc(az,el){const rim=rimAt(az);return{visible:el>rim,margin:el-rim,rim}}
+function buildMask(lat){
+  // higher latitude (closer to pole) tends to lower local rims on ridges
+  const base=Math.abs(lat)>88?0.35:0.6;
+  const mask=[];
+  for(let i=0;i<360;i++) mask.push(clamp(base+(Math.random()-0.5)*0.3+Math.sin(i*0.05)*0.2,0.1,2.5));
+  return mask;
+}
+
+/* ===== THREE.JS SCENE ===== */
+const canvas = $('globe-canvas');
+let renderer, scene, camera, controls;
+let sunLight, sunMesh, sunGlow, earthGroup, earth, moonGroup, moon, markerGroup;
+let markerMeshes = [];
+let has3D = false;
+
+function init3D() {
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setClearColor(0x07090E, 1);
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
+    camera.position.set(0, 12, 28);
+
+    if (typeof THREE.OrbitControls === 'function') {
+      controls = new THREE.OrbitControls(camera, canvas);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.08;
+      controls.minDistance = 3;
+      controls.maxDistance = 80;
+    }
+
+    // Stars
+    const starGeo = new THREE.BufferGeometry();
+    const starCount = 2500;
+    const starPos = new Float32Array(starCount * 3);
+    for (let i = 0; i < starCount; i++) {
+      const r = 90 + Math.random() * 150;
+      const t = Math.random() * Math.PI * 2;
+      const p = Math.acos(2 * Math.random() - 1);
+      starPos[i * 3]     = r * Math.sin(p) * Math.cos(t);
+      starPos[i * 3 + 1] = r * Math.sin(p) * Math.sin(t);
+      starPos[i * 3 + 2] = r * Math.cos(p);
+    }
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+    scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.4, sizeAttenuation: true })));
+
+    // Lights
+    sunLight = new THREE.DirectionalLight(0xfff5d6, 1.6);
+    sunLight.position.set(40, 10, 20);
+    scene.add(sunLight);
+    scene.add(new THREE.AmbientLight(0x556677, 0.4));
+
+    // Sun body
+    sunMesh = new THREE.Mesh(
+      new THREE.SphereGeometry(2.5, 24, 24),
+      new THREE.MeshBasicMaterial({ color: 0xffe566 })
+    );
+    sunMesh.position.copy(sunLight.position);
+    scene.add(sunMesh);
+    sunGlow = new THREE.Mesh(
+      new THREE.SphereGeometry(4, 24, 24),
+      new THREE.MeshBasicMaterial({ color: 0xff9900, transparent: true, opacity: 0.18 })
+    );
+    sunGlow.position.copy(sunLight.position);
+    scene.add(sunGlow);
+
+    // Real textures (public Three.js example maps)
+    const loader = new THREE.TextureLoader();
+    const earthTex = loader.load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/textures/planets/earth_atmos_2048.jpg');
+    const moonTex  = loader.load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/textures/planets/moon_1024.jpg');
+
+    // Earth
+    earthGroup = new THREE.Group();
+    earth = new THREE.Mesh(
+      new THREE.SphereGeometry(3.5, 64, 64),
+      new THREE.MeshPhongMaterial({ map: earthTex, shininess: 12 })
+    );
+    earthGroup.add(earth);
+    scene.add(earthGroup);
+
+    // Moon (larger so it dominates the view)
+    moonGroup = new THREE.Group();
+    moon = new THREE.Mesh(
+      new THREE.SphereGeometry(2.2, 64, 64),
+      new THREE.MeshPhongMaterial({ map: moonTex, shininess: 2 })
+    );
+    moonGroup.add(moon);
+    // South pole ring
+    const sp = new THREE.Mesh(
+      new THREE.RingGeometry(0.18, 0.28, 32),
+      new THREE.MeshBasicMaterial({ color: 0xef4444, side: THREE.DoubleSide })
+    );
+    sp.position.set(0, -2.25, 0);
+    sp.rotation.x = Math.PI / 2;
+    moonGroup.add(sp);
+    moonGroup.position.set(14, 0.5, 0);
+    scene.add(moonGroup);
+
+    // Markers group
+    markerGroup = new THREE.Group();
+    moonGroup.add(markerGroup);
+
+    has3D = true;
+    console.log('3D globe ready (real textures)');
+  } catch (err) {
+    console.warn('WebGL / 3D init failed:', err);
+    has3D = false;
+    const msg = document.createElement('div');
+    msg.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:13px;text-align:center;padding:2rem;pointer-events:none';
+    msg.innerHTML = '3D globe needs WebGL (use Chrome/Firefox).<br/>Sites + metrics still work on the sides →';
+    canvas.parentElement.appendChild(msg);
+  }
+}
+
+function latLonToMoon(lat, lon, r) {
+  r = r || 2.28; // slightly above moon radius 2.2
+  const phi = deg2rad(90 + lat);
+  const theta = deg2rad(lon);
+  const x = r * Math.sin(phi) * Math.sin(theta);
+  const y = r * Math.cos(phi);
+  const z = r * Math.sin(phi) * Math.cos(theta);
+  return new THREE.Vector3(x, y, z);
+}
+
+function rebuildMarkers() {
+  if (!has3D || !markerGroup) return;
+  while (markerGroup.children.length) markerGroup.remove(markerGroup.children[0]);
+  markerMeshes = [];
+  PRESETS.forEach(function (p) {
+    const m = new THREE.Mesh(
+      new THREE.SphereGeometry(0.07, 12, 12),
+      new THREE.MeshBasicMaterial({ color: p.id === state.activePreset ? 0x4ade80 : 0x22d3ee })
+    );
+    m.position.copy(latLonToMoon(p.lat, p.lon));
+    m.userData = p;
+    markerGroup.add(m);
+    markerMeshes.push(m);
+  });
+  const lander = new THREE.Mesh(
+    new THREE.SphereGeometry(0.08, 12, 12),
+    new THREE.MeshBasicMaterial({ color: 0x4ade80 })
+  );
+  lander.position.copy(latLonToMoon(state.lat, state.lon, 2.32));
+  markerGroup.add(lander);
+}
+
+function setSunPosition(day) {
+  if (!has3D) return;
+  const a = (day / 28) * Math.PI * 2;
+  const dist = 50;
+  const x = Math.cos(a) * dist;
+  const y = Math.sin(a) * 10;
+  const z = Math.sin(a) * dist;
+  sunLight.position.set(x, y, z);
+  sunMesh.position.set(x, y, z);
+  sunGlow.position.set(x, y, z);
+}
+
+function setMoonOrbit(day) {
+  if (!has3D) return;
+  const a = (day / 28) * Math.PI * 2 * 0.95;
+  const R = 16;
+  moonGroup.position.set(Math.cos(a) * R, Math.sin(a) * 1.2, Math.sin(a) * R);
+  moonGroup.lookAt(earthGroup.position);
+}
+
+function setCameraFocus(mode) {
+  document.querySelectorAll('[data-cam]').forEach(function (b) {
+    b.classList.toggle('active', b.dataset.cam === mode);
+  });
+  if (!has3D) return;
+  if (mode === 'system') {
+    camera.position.set(0, 14, 32);
+    if (controls) controls.target.set(0, 0, 0);
+  } else if (mode === 'earth') {
+    camera.position.set(10, 5, 12);
+    if (controls) controls.target.copy(earthGroup.position);
+  } else if (mode === 'moon') {
+    const p = moonGroup.position.clone();
+    camera.position.copy(p).add(new THREE.Vector3(6, 3, 7));
+    if (controls) controls.target.copy(p);
+  } else {
+    // south pole close-up — locked on Moon south pole
+    const local = latLonToMoon(-90, 0, 2.5);
+    moonGroup.updateMatrixWorld(true);
+    const world = local.clone().applyMatrix4(moonGroup.matrixWorld);
+    camera.position.copy(world).add(new THREE.Vector3(1.2, -0.6, 2.0));
+    if (controls) controls.target.copy(world);
+  }
+  if (controls) controls.update();
+}
+
+function resize() {
+  if (!has3D) return;
+  const w = canvas.clientWidth || canvas.parentElement.clientWidth;
+  const h = canvas.clientHeight || canvas.parentElement.clientHeight;
+  if (w < 10 || h < 10) return;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  if (!has3D) return;
+  resize();
+  if (earth) earth.rotation.y += 0.002;
+  if (controls) controls.update();
+  renderer.render(scene, camera);
+}
+
+/* UI + metrics */
+function applySite(p){
+  state.lat=p.lat; state.lon=p.lon; state.activePreset=p.id; state.siteName=p.name;
+  state.terrainHeight=Math.abs(p.lat)>88.5?0.5:0.2;
+  state.horizonMask=buildMask(p.lat);
+  $('input-lat').value=p.lat; $('input-lon').value=p.lon;
+  $('site-desc').textContent=p.note;
+  renderList(); updateInfo(); update(); rebuildMarkers();
+}
+
+function updateInfo(){
+  $('click-info').innerHTML=`<div>Lat <span class="text-slate-300">${state.lat.toFixed(2)}°</span> · Lon <span class="text-slate-300">${state.lon.toFixed(1)}°</span></div>
+  <div class="text-cyan-400/80 mt-0.5">${state.siteName}</div>`;
+}
+
+function renderList(){
+  $('site-list').innerHTML=PRESETS.map(p=>`
+    <div class="site-item ${state.activePreset===p.id?'active':''}" data-id="${p.id}">
+      <div class="text-sm font-medium text-slate-200 leading-tight">${p.name}</div>
+      <div class="text-[10px] font-mono text-slate-500">${p.lat.toFixed(1)}°, ${p.lon.toFixed(1)}°</div>
+    </div>`).join('');
+  $('site-list').querySelectorAll('.site-item').forEach(el=>{
+    el.onclick=()=>{const p=PRESETS.find(x=>x.id===el.dataset.id);if(p)applySite(p)};
+  });
+}
+
+function setBadge(id,pct){
+  const el=$(id);
+  if(pct>=65){el.textContent='GOOD';el.className='status-pill status-good'}
+  else if(pct>=28){el.textContent='PARTIAL';el.className='status-pill status-partial'}
+  else{el.textContent='NONE';el.className='status-pill status-none'}
+}
+
+function update(){
+  const day=state.day;
+  $('day-label').textContent=`Day ${day.toFixed(1)}`;
+  const sun=getSun(day,state.lat,state.lon);
+  const earth=getEarth(day,state.lat,state.lon);
+  const sO=checkOcc(sun.az,sun.el), eO=checkOcc(earth.az,earth.el);
+  $('phase-label').textContent=sun.el>0.3?'Sun above horizon':'Sun below horizon';
+  $('phase-label').className='text-[10px] font-mono '+(sun.el>0.3?'text-amber-300':'text-slate-500');
+
+  let power=0;
+  if(sO.visible&&sun.el>-0.2){
+    power=state.terrainHeight<-0.5?clamp(sun.el*8+sO.margin*5,0,25):clamp(55+sun.el*18+sO.margin*12,20,100);
+  }
+  power=Math.round(clamp(power,0,100));
+  let dte=0;
+  if(eO.visible&&earth.el>0.5) dte=Math.min(100,Math.max(20,55+earth.el*6+eO.margin*4));
+  else if(earth.el>-1) dte=Math.max(0,10+earth.el*3);
+  dte=Math.round(clamp(dte,0,100));
+
+  $('power-pct').textContent=power+'%'; $('power-bar').style.width=power+'%';
+  $('dte-pct').textContent=dte+'%'; $('dte-bar').style.width=dte+'%';
+  $('sun-detail').textContent=`Az ${sun.az.toFixed(1)}° · El ${sun.el>=0?'+':''}${sun.el.toFixed(1)}°`;
+  $('earth-detail').textContent=`Az ${earth.az.toFixed(1)}° · El ${earth.el>=0?'+':''}${earth.el.toFixed(1)}°`;
+  setBadge('power-status',power); setBadge('dte-status',dte);
+  $('sun-visible').textContent=sO.visible?'YES':'NO';
+  $('sun-visible').className=sO.visible?'text-green-400':'text-red-400';
+  $('earth-visible').textContent=eO.visible?'YES':'NO';
+  $('earth-visible').className=eO.visible?'text-green-400':'text-red-400';
+  $('sun-margin').textContent=sO.margin.toFixed(1)+'°';
+  $('earth-margin').textContent=eO.margin.toFixed(1)+'°';
+
+  setSunPosition(day); setMoonOrbit(day);
+}
+
+/* events */
+document.querySelectorAll('[data-tab]').forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll('[data-tab]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    $('tab-sites').classList.toggle('hidden',btn.dataset.tab!=='sites');
+    $('tab-coords').classList.toggle('hidden',btn.dataset.tab!=='coords');
+  };
+});
+document.querySelectorAll('[data-cam]').forEach(btn=>{
+  btn.onclick=()=>setCameraFocus(btn.dataset.cam);
+});
+$('btn-jump').onclick=()=>{
+  const lat=parseFloat($('input-lat').value), lon=parseFloat($('input-lon').value);
+  if(isNaN(lat)||isNaN(lon))return;
+  state.lat=lat; state.lon=normalizeAz(lon); state.activePreset=null; state.siteName='Custom pin';
+  state.terrainHeight=Math.abs(lat)>88.5?0.5:0.2;
+  state.horizonMask=buildMask(lat);
+  $('site-desc').textContent='Custom coordinates — analyze lighting & DTE for your pin.';
+  renderList(); updateInfo(); update(); rebuildMarkers();
+};
+$('timeline').oninput=e=>{state.day=parseFloat(e.target.value);update()};
+function togglePlay(){
+  if(state.playing){clearInterval(state.timer);state.playing=false;$('btn-play').textContent='▶'}
+  else{state.playing=true;$('btn-play').textContent='⏸';
+    state.timer=setInterval(()=>{state.day+=0.06*state.speed;if(state.day>28)state.day=0;$('timeline').value=state.day;update()},40)}
+}
+$('btn-play').onclick=togglePlay;
+$('btn-ff').onclick=()=>{state.speed=state.speed===1?4:1;$('btn-ff').style.color=state.speed===4?'#22D3EE':''};
+$('btn-reset').onclick=()=>{state.day=0;$('timeline').value=0;if(state.playing)togglePlay();update()};
+$('btn-export').onclick=()=>{
+  const sun=getSun(state.day,state.lat,state.lon), earth=getEarth(state.day,state.lat,state.lon);
+  const sO=checkOcc(sun.az,sun.el), eO=checkOcc(earth.az,earth.el);
+  const report={generated:new Date().toISOString(),missionDay:+state.day.toFixed(2),
+    site:{name:state.siteName,lat:state.lat,lon:state.lon},
+    sun:{az:+sun.az.toFixed(1),el:+sun.el.toFixed(1),visible:sO.visible},
+    earth:{az:+earth.az.toFixed(1),el:+earth.el.toFixed(1),visible:eO.visible},
+    power_pct:parseInt($('power-pct').textContent),dte_pct:parseInt($('dte-pct').textContent)};
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(report,null,2)],{type:'application/json'}));
+  a.download=`clps-${state.activePreset||'custom'}-day${state.day.toFixed(1)}.json`;a.click();
+};
+
+/* click markers in 3D */
+let raycaster = null, mouse = null;
+try { raycaster = new THREE.Raycaster(); mouse = new THREE.Vector2(); } catch(e) {}
+canvas.addEventListener('click', function(e) {
+  if (!has3D || !camera || !raycaster) return;
+  const rect = canvas.getBoundingClientRect();
+  mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(markerMeshes);
+  if (hits.length) applySite(hits[0].object.userData);
+});
+
+/* init */
+renderList();
+init3D();
+const startSite = PRESETS.find(p => p.id === 'cr');
+applySite(startSite);
+rebuildMarkers();
+setCameraFocus('moon');
+animate();
+update();
+window.addEventListener('resize', resize);
+setTimeout(function(){ resize(); setCameraFocus('moon'); }, 150);
+</script>
+</body>
+</html>
