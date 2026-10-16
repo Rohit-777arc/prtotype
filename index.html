@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>CLPS Lunar Mission Browser | Artemis South Pole</title>
+<title>clps-moon-browser-prototype-7 | CLPS Lunar Mission Browser</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -45,8 +45,8 @@ input[type=number]{background:#0F1520;border:1px solid #2A3548;color:#e2e8f0;bor
   <div class="flex items-center gap-3">
     <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-lg">☾</div>
     <div>
-      <h1 class="text-sm font-bold tracking-wide text-white leading-tight">CLPS LUNAR MISSION BROWSER</h1>
-      <p class="text-[10px] text-slate-500 font-mono">Artemis III Candidate Regions · LRO/LOLA inspired</p>
+      <h1 class="text-sm font-bold tracking-wide text-white leading-tight">CLPS MOON BROWSER</h1>
+      <p class="text-[10px] text-slate-500 font-mono">clps-moon-browser-prototype-7 · Artemis III · LRO/LOLA</p>
     </div>
   </div>
   <div class="flex items-center gap-1.5 text-xs flex-wrap justify-end max-w-[55%]">
@@ -255,8 +255,8 @@ function init3D() {
       controls = new THREE.OrbitControls(camera, canvas);
       controls.enableDamping = true;
       controls.dampingFactor = 0.08;
-      controls.minDistance = 3;
-      controls.maxDistance = 80;
+      controls.minDistance = 1.5;
+      controls.maxDistance = 200;
     }
 
     // Stars
@@ -282,14 +282,14 @@ function init3D() {
 
     // Sun body
     sunMesh = new THREE.Mesh(
-      new THREE.SphereGeometry(2.5, 24, 24),
+      new THREE.SphereGeometry(3.8, 32, 32),
       new THREE.MeshBasicMaterial({ color: 0xffe566 })
     );
     sunMesh.position.copy(sunLight.position);
     scene.add(sunMesh);
     sunGlow = new THREE.Mesh(
-      new THREE.SphereGeometry(4, 24, 24),
-      new THREE.MeshBasicMaterial({ color: 0xff9900, transparent: true, opacity: 0.18 })
+      new THREE.SphereGeometry(6.5, 32, 32),
+      new THREE.MeshBasicMaterial({ color: 0xff9900, transparent: true, opacity: 0.15 })
     );
     sunGlow.position.copy(sunLight.position);
     scene.add(sunGlow);
@@ -302,7 +302,7 @@ function init3D() {
     // Earth
     earthGroup = new THREE.Group();
     earth = new THREE.Mesh(
-      new THREE.SphereGeometry(3.5, 64, 64),
+      new THREE.SphereGeometry(1.6, 64, 64),
       new THREE.MeshPhongMaterial({ map: earthTex, shininess: 12 })
     );
     earthGroup.add(earth);
@@ -311,16 +311,16 @@ function init3D() {
     // Moon (larger so it dominates the view)
     moonGroup = new THREE.Group();
     moon = new THREE.Mesh(
-      new THREE.SphereGeometry(2.2, 64, 64),
+      new THREE.SphereGeometry(0.45, 48, 48),
       new THREE.MeshPhongMaterial({ map: moonTex, shininess: 2 })
     );
     moonGroup.add(moon);
     // South pole ring
     const sp = new THREE.Mesh(
-      new THREE.RingGeometry(0.18, 0.28, 32),
+      new THREE.RingGeometry(0.05, 0.08, 32),
       new THREE.MeshBasicMaterial({ color: 0xef4444, side: THREE.DoubleSide })
     );
-    sp.position.set(0, -2.25, 0);
+    sp.position.set(0, -0.48, 0);
     sp.rotation.x = Math.PI / 2;
     moonGroup.add(sp);
     moonGroup.position.set(14, 0.5, 0);
@@ -343,7 +343,7 @@ function init3D() {
 }
 
 function latLonToMoon(lat, lon, r) {
-  r = r || 2.28; // slightly above moon radius 2.2
+  r = r || 0.48; // slightly above moon radius 0.45
   // +Y = north, -Y = south. phi = 0 at north pole, 180 at south
   const phi = deg2rad(90 - lat);
   const theta = deg2rad(lon);
@@ -359,7 +359,7 @@ function rebuildMarkers() {
   markerMeshes = [];
   PRESETS.forEach(function (p) {
     const m = new THREE.Mesh(
-      new THREE.SphereGeometry(0.07, 12, 12),
+      new THREE.SphereGeometry(0.025, 10, 10),
       new THREE.MeshBasicMaterial({ color: p.id === state.activePreset ? 0x4ade80 : 0x22d3ee })
     );
     m.position.copy(latLonToMoon(p.lat, p.lon));
@@ -368,10 +368,10 @@ function rebuildMarkers() {
     markerMeshes.push(m);
   });
   const lander = new THREE.Mesh(
-    new THREE.SphereGeometry(0.08, 12, 12),
+    new THREE.SphereGeometry(0.03, 10, 10),
     new THREE.MeshBasicMaterial({ color: 0x4ade80 })
   );
-  lander.position.copy(latLonToMoon(state.lat, state.lon, 2.32));
+  lander.position.copy(latLonToMoon(state.lat, state.lon, 0.50));
   markerGroup.add(lander);
 }
 
@@ -383,21 +383,21 @@ function setOrbits(day) {
   sunMesh.position.set(0, 0, 0);
   sunGlow.position.set(0, 0, 0);
 
-  // Earth orbits the Sun (one full orbit over 28 days for visibility)
+  // Earth orbits the Sun (farther = more realistic spacing)
   const earthAngle = (day / 28) * Math.PI * 2;
-  const earthDist = 22;
+  const earthDist = 72;
   earthGroup.position.set(
     Math.cos(earthAngle) * earthDist,
     0,
     Math.sin(earthAngle) * earthDist
   );
 
-  // Moon orbits the Earth (faster — ~1 orbit per ~2 days in this scale)
-  const moonAngle = (day / 28) * Math.PI * 2 * 12;
-  const moonDist = 6;
+  // Moon orbits Earth (~27 day period scaled into 28-day slider)
+  const moonAngle = (day / 28) * Math.PI * 2;
+  const moonDist = 18;
   moonGroup.position.set(
     earthGroup.position.x + Math.cos(moonAngle) * moonDist,
-    earthGroup.position.y + Math.sin(moonAngle) * 0.4,
+    earthGroup.position.y + Math.sin(moonAngle) * 0.35,
     earthGroup.position.z + Math.sin(moonAngle) * moonDist
   );
   // Tide-lock approx: moon faces earth
@@ -418,22 +418,22 @@ function setCameraFocus(mode) {
 function applyCamera() {
   if (!has3D) return;
   if (cameraMode === 'system') {
-    camera.position.set(0, 18, 40);
+    camera.position.set(0, 40, 110);
     if (controls) controls.target.set(0, 0, 0);
   } else if (cameraMode === 'earth') {
     const p = earthGroup.position.clone();
-    camera.position.copy(p).add(new THREE.Vector3(10, 5, 12));
+    camera.position.copy(p).add(new THREE.Vector3(6, 3, 8));
     if (controls) controls.target.copy(p);
   } else if (cameraMode === 'moon') {
     const p = moonGroup.position.clone();
-    camera.position.copy(p).add(new THREE.Vector3(7, 3.5, 8));
+    camera.position.copy(p).add(new THREE.Vector3(2.2, 1.2, 2.8));
     if (controls) controls.target.copy(p);
   } else {
     // south pole close-up
-    const local = latLonToMoon(-90, 0, 2.6);
+    const local = latLonToMoon(-90, 0, 0.55);
     moonGroup.updateMatrixWorld(true);
     const world = local.clone().applyMatrix4(moonGroup.matrixWorld);
-    camera.position.copy(world).add(new THREE.Vector3(1.5, -0.8, 2.2));
+    camera.position.copy(world).add(new THREE.Vector3(0.5, -0.25, 0.7));
     if (controls) controls.target.copy(world);
   }
   if (controls) controls.update();
